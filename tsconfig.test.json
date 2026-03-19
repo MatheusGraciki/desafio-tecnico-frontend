@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": ["jest", "node"],
+    "allowImportingTsExtensions": false
+  },
+  "include": ["src/**/*.{test,spec}.ts", "src/**/*.{test,spec}.tsx", "src/test/setup.ts"]
+}

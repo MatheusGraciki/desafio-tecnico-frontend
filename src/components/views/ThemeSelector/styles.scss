@@ -1,0 +1,33 @@
+.theme-selector {
+}
+
+.theme-selector-icon-button {
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  background-color: var(--background);
+
+  &:hover {
+    background-color: var(--muted);
+  }
+}
+
+.theme-selector-menu-paper {
+  margin-top: 0.5rem;
+  min-width: 240px;
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  color: var(--card-foreground);
+}
+
+.theme-selector-menu-title {
+  padding: 0.5rem 1rem;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+.theme-selector-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
