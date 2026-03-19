@@ -7,6 +7,27 @@
     <meta name="author" content="Matheus Graciki" />
     <meta name="theme-color" content="#ffffff" />
     <link rel="icon" type="image/svg+xml" href="/favicon.png?v=2" />
+    <script>
+      (function () {
+        var themeKey = "app-color-theme-v2";
+        var modeKey = "app-mode-v2";
+        var defaultTheme = "greenlime";
+
+        try {
+          var storedTheme = localStorage.getItem(themeKey);
+          var storedMode = localStorage.getItem(modeKey);
+
+          var theme = storedTheme || defaultTheme;
+          var mode = storedMode === "light" || storedMode === "dark" ? storedMode : "light";
+
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.classList.toggle("dark", mode === "dark");
+        } catch {
+          document.documentElement.setAttribute("data-theme", defaultTheme);
+          document.documentElement.classList.remove("dark");
+        }
+      })();
+    </script>
   </head>
 
   <body>
