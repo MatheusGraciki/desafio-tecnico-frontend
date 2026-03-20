@@ -1,78 +1,190 @@
-import { useTheme, type ColorTheme } from "@/contexts/theme-context";
-import { fetchMachines } from "@/services/machines";
-import { Box, Button, FormControl, MenuItem, Select, Typography } from "@mui/material";
-import { useEffect } from "react";
+import { useMemo, useState } from "react";
+import { FaChevronLeft, FaChevronRight, FaRegCircleCheck } from "react-icons/fa6";
+import { Alert, Button, Col, Row } from "reactstrap";
+
+import { AnalysisSidebar } from "./components/AnalysisSidebar/index.tsx";
+import { IndexFilters } from "./components/IndexFilters/index.tsx";
+import { MachineCard } from "./components/MachineCard/index.tsx";
+import { StatusCards } from "./components/StatusCards/index.tsx";
+import { useIndexMachines } from "./hooks/useIndexMachines";
+import "./styles.scss";
+
+import type { MachineStatusCategory } from "@/services/machines/type.d.ts";
+import type { StatusCardItem } from "./components/StatusCards/type";
+import { MdOutlineCrisisAlert, MdOutlineSpeed } from "react-icons/md";
+import { LuClock12, LuClock4, LuClock6 } from "react-icons/lu";
+
+interface SummaryItem extends StatusCardItem {
+	key: MachineStatusCategory;
+}
+
+const SUMMARY_META: Record<
+	MachineStatusCategory,
+	Pick<SummaryItem, "label" | "textColor" | "buttonColor" | "smallIcon" | "largeIcon">
+> = {
+	operando: {
+		label: "Em Operação",
+		textColor: "success",
+		buttonColor: "success",
+		smallIcon: null,
+		largeIcon: <FaRegCircleCheck size={30} />,
+	},
+	alerta: {
+		label: "Em Alerta",
+		textColor: "danger",
+		buttonColor: "danger",
+		smallIcon: <MdOutlineCrisisAlert size={16} />,
+		largeIcon: null,
+	},
+	atencao: {
+		label: "Em Atenção",
+		textColor: "warning",
+		buttonColor: "warning",
+		smallIcon: <MdOutlineSpeed size={16} />,
+		largeIcon: <LuClock6 size={30} />,
+	},
+	parada: {
+		label: "Parada ou Offline",
+		textColor: "secondary",
+		buttonColor: "secondary",
+		smallIcon: <LuClock12 size={16} />,
+		largeIcon: <LuClock4 size={30} />,
+	},
+};
+
+function DashboardSkeleton() {
+	return (
+		<div className="index-skeleton">
+			<div className="index-skeleton-top">
+				{Array.from({ length: 4 }).map((_, index) => (
+					<div key={index} className="bg-body-secondary rounded index-skeleton-card" />
+				))}
+			</div>
+			<div className="index-skeleton-bottom">
+				<div className="bg-body-secondary rounded index-skeleton-main" />
+				<div className="bg-body-secondary rounded index-skeleton-side" />
+			</div>
+		</div>
+	);
+}
 
 export default function IndexPage() {
-	const { colorTheme, mode, toggleMode, setColorTheme, availableThemes } = useTheme();
+	const [analysisOpen, setAnalysisOpen] = useState(true);
+	const {
+		loading,
+		error,
+		selectedLocation,
+		setSelectedLocation,
+		machinesPage,
+		setMachinesPage,
+		machinesPerPage,
+		totalMachinePages,
+		locations,
+		filteredMachines,
+		paginatedMachines,
+		statusCounts,
+		criticalMachines,
+		warningMachines,
+		timelineData,
+	} = useIndexMachines();
 
-	useEffect(() => {
-		fetchMachines().then((data) => {
-			console.debug("Máquinas:", data);
-		});
-	}, []);
+	const summaryItems = useMemo<SummaryItem[]>(() => {
+		const total = filteredMachines.length || 1;
+
+		return (Object.keys(SUMMARY_META) as MachineStatusCategory[]).map((key) => ({
+			key,
+			label: SUMMARY_META[key].label,
+			count: statusCounts[key],
+			percentage: Math.round((statusCounts[key] / total) * 100),
+			textColor: SUMMARY_META[key].textColor,
+			buttonColor: SUMMARY_META[key].buttonColor,
+			smallIcon: SUMMARY_META[key].smallIcon,
+			largeIcon: SUMMARY_META[key].largeIcon,
+		}));
+	}, [filteredMachines, statusCounts]);
+
+	function handlePreviousPage() {
+		setMachinesPage((value) => (value === 0 ? totalMachinePages - 1 : value - 1));
+	}
+
+	function handleNextPage() {
+		setMachinesPage((value) => (value === totalMachinePages - 1 ? 0 : value + 1));
+	}
 
 	return (
-		<Box
-			component="section"
-			sx={{
-				maxWidth: 840,
-				mx: "auto",
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
-				textAlign: "center",
-				gap: { xs: 1, sm: 1.25 },
-			}}
-		>
-			<Box>
-				<Typography variant="h4" fontWeight={700}>
-					ECO Automação Industrial
-				</Typography>
-				<Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-					Sistema white-label com temas dinâmicos e modo claro/escuro
-				</Typography>
-			</Box>
+		<div className="index-page d-flex flex-column px-2 px-md-3 px-lg-4">
+			<h1 className="h4 fw-bold mb-0">Visão Geral</h1>
 
-			<Box sx={{ width: "100%", maxWidth: { xs: 420, sm: "none" } }}>
-				<Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 0.75 }}>
-					Tema Atual: <strong>{colorTheme}</strong> ({mode})
-				</Typography>
+			{error ? <Alert color="danger">{error}</Alert> : null}
 
-				<Box
-					sx={{
-						width: { xs: "100%", sm: "auto" },
-						display: "flex",
-						flexDirection: { xs: "column", sm: "row" },
-					}}
-				>
-					<Button
-						variant="contained"
-						onClick={toggleMode}
-						size="small"
-						sx={{ width: { xs: "100%", sm: "auto" }, minWidth: { sm: 200 } }}
-					>
-						Modo: {mode === "light" ? "Claro → Escuro" : "Escuro → Claro"}
-					</Button>
+			{loading ? (
+				<DashboardSkeleton />
+			) : (
+				<>
+					<Row className="g-3 align-items-start">
+						<Col xs={12} lg={9}>
+							<Row className="g-3">
+								<IndexFilters
+									selectedLocation={selectedLocation}
+									locations={locations}
+									onLocationChange={setSelectedLocation}
+								/>
+							</Row>
 
-					<FormControl sx={{ width: { xs: "100%", sm: "auto" }, minWidth: { sm: 200 } }}>
-						<Select
-							value={colorTheme}
-							size="small"
-							onChange={(event) => {
-								const nextTheme = event.target.value as ColorTheme;
-								setColorTheme(nextTheme);
-							}}
-						>
-							{availableThemes.map((themeName) => (
-								<MenuItem key={themeName} value={themeName}>
-									{themeName}
-								</MenuItem>
-							))}
-						</Select>
-					</FormControl>
-				</Box>
-			</Box>
-		</Box>
+							<div className="index-summary-wrapper">
+								<StatusCards items={summaryItems} />
+							</div>
+
+							<div className="index-distribution">
+								<div className="index-distribution-header d-flex align-items-center justify-content-between">
+									<h2 className="h6 mb-0">Distribuição de Status</h2>
+
+									{filteredMachines.length > machinesPerPage ? (
+										<div className="index-pagination d-flex align-items-center">
+											<Button
+												color="link"
+												className="p-0 index-pagination-button"
+												onClick={handlePreviousPage}
+												aria-label="Página anterior"
+											>
+												<FaChevronLeft size={12} />
+											</Button>
+
+											<small className="text-secondary">
+												{machinesPage + 1}/{totalMachinePages}
+											</small>
+
+											<Button
+												color="link"
+												className="p-0 index-pagination-button"
+												onClick={handleNextPage}
+												aria-label="Próxima página"
+											>
+												<FaChevronRight size={12} />
+											</Button>
+										</div>
+									) : null}
+								</div>
+								<div className="index-machine-grid">
+									{paginatedMachines.map((machine) => (
+										<MachineCard key={machine.id} machine={machine} />
+									))}
+								</div>
+							</div>
+						</Col>
+
+						<Col xs={12} lg={3}>
+							<AnalysisSidebar
+								analysisOpen={analysisOpen}
+								onToggle={() => setAnalysisOpen((value) => !value)}
+								criticalMachines={criticalMachines}
+								warningMachines={warningMachines}
+								timelineData={timelineData}
+							/>
+						</Col>
+					</Row>
+				</>
+			)}
+		</div>
 	);
 }

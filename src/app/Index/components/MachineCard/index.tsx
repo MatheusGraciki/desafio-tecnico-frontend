@@ -10,7 +10,7 @@ import {
 	FaTriangleExclamation,
 } from "react-icons/fa6";
 import { AppCard } from "@/components/common/Card";
-import { getLastMachineData, getStatusInfo } from "../../helpers/machine-utils/index";
+import { getLastMachineData, getStatusInfo } from "../../utils/machine";
 import type { MachineCardProps } from "./type";
 import "./styles.scss";
 

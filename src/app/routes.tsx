@@ -1,5 +1,4 @@
 import type { ComponentType } from "react";
-import { Box } from "@mui/material";
 import type { RouteObject } from "react-router-dom";
 import { Outlet, useRoutes } from "react-router-dom";
 import { AppHeader } from "@/components/views/AppHeader";
@@ -42,25 +41,12 @@ function buildPageRoutes(): PageRoute[] {
 
 function AppLayout() {
 	return (
-		<Box
-			sx={{
-				minHeight: "100vh",
-				display: "flex",
-				flexDirection: "column",
-			}}
-		>
+		<div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
 			<AppHeader />
-			<Box
-				component="main"
-				sx={{
-					flex: 1,
-					px: { xs: 0.5, sm: 0.75, lg: 1 },
-					py: { xs: 0.5, sm: 0.75 },
-				}}
-			>
+			<main style={{ flex: 1, padding: "0.5rem" }}>
 				<Outlet />
-			</Box>
-		</Box>
+			</main>
+		</div>
 	);
 }
 

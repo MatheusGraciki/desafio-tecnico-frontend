@@ -1,0 +1,30 @@
+.analysis-sidebar {
+	width: 100%;
+	min-width: 0;
+	padding-left: 0;
+}
+
+.analysis-sidebar-content {
+	gap: 0.75rem;
+}
+
+.analysis-sidebar-open {
+	overflow: hidden;
+}
+
+.analysis-sidebar-closed {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.analysis-sidebar-toggle {
+	display: flex;
+	justify-content: center;
+	padding-top: 0.25rem;
+}
+
+@media (min-width: 992px) {
+	.analysis-sidebar {
+		padding-left: 1rem;
+	}
+}

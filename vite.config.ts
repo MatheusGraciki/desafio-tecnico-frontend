@@ -21,8 +21,7 @@ export default defineConfig(({ mode }) => {
 					"/api": {
 						target: apiOrigin,
 						changeOrigin: true,
-						rewrite: (requestPath) =>
-							requestPath.replace(/^\/api/, `${apiPathPrefix}` || ""),
+						rewrite: (requestPath) => requestPath.replace(/^\/api/, `${apiPathPrefix}` || ""),
 					},
 				}
 				: undefined,
