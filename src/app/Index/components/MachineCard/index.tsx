@@ -38,32 +38,26 @@ export const MachineCard = memo(function MachineCard({ machine }: MachineCardPro
 				<hr className="my-1" />
 
 				<div className="machine-card-metrics">
-					<div className="d-flex align-items-center gap-2 flex-fill" style={{ minWidth: 80 }}>
+					<div className="machine-card-metric d-flex align-items-center gap-2 flex-fill">
 						<FaGaugeHigh className="text-primary" />
 						<div>
-							<small className="text-secondary d-block" style={{ fontSize: 11 }}>
-								RPM
-							</small>
+							<small className="machine-card-metric-label text-secondary d-block">RPM</small>
 							<div className="fw-semibold">{lastData?.rpm ?? "--"}</div>
 						</div>
 					</div>
 
-					<div className="d-flex align-items-center gap-2 flex-fill" style={{ minWidth: 80 }}>
+					<div className="machine-card-metric d-flex align-items-center gap-2 flex-fill">
 						<FaBolt className="text-secondary" />
 						<div>
-							<small className="text-secondary d-block" style={{ fontSize: 11 }}>
-								Potência
-							</small>
+							<small className="machine-card-metric-label text-secondary d-block">Potência</small>
 							<div className="fw-semibold">{lastData?.potencia ?? "--"} W</div>
 						</div>
 					</div>
 
-					<div className="d-flex align-items-center gap-2 flex-fill" style={{ minWidth: 80 }}>
+					<div className="machine-card-metric machine-card-metric-temperature d-flex align-items-center gap-2 flex-fill">
 						<FaTemperatureThreeQuarters className="text-warning" />
 						<div>
-							<small className="text-secondary d-block" style={{ fontSize: 11 }}>
-								Temp
-							</small>
+							<small className="machine-card-metric-label text-secondary d-block">Temp</small>
 							<div className="fw-semibold">{lastData?.temperatura ?? "--"} °C</div>
 						</div>
 					</div>

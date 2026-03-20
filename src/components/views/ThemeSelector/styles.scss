@@ -1,14 +1,24 @@
 .theme-selector {
+	display: flex;
+	gap: 8px;
+	align-items: center;
 }
 
 .theme-selector-icon-button {
   border: 1px solid var(--border);
   color: var(--foreground);
   background-color: var(--background);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 
   &:hover {
     background-color: var(--muted);
   }
+}
+
+.theme-selector-icon-button.btn {
+	padding: 0.3rem 0.45rem;
 }
 
 .theme-selector-menu-paper {
@@ -17,12 +27,16 @@
   border: 1px solid var(--border);
   background-color: var(--card);
   color: var(--card-foreground);
+  padding: 0.25rem;
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 .theme-selector-menu-title {
   padding: 0.5rem 1rem;
   color: var(--muted-foreground);
   font-weight: 600;
+  font-size: 0.75rem;
 }
 
 .theme-selector-color-dot {
@@ -30,4 +44,51 @@
   height: 12px;
   border-radius: 50%;
   border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.theme-selector-menu-item {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-radius: 0.35rem;
+  color: var(--card-foreground);
+
+  &.dropdown-item {
+    padding: 0.45rem 0.6rem;
+  }
+
+  &:hover,
+  &:focus {
+    background-color: var(--muted);
+    color: var(--foreground);
+  }
+
+  &.active,
+  &:active {
+    background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+    color: var(--foreground);
+  }
+}
+
+.theme-selector-item-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.theme-selector-item-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.theme-selector-item-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  color: var(--primary);
 }

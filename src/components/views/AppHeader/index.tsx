@@ -1,21 +1,21 @@
-import { AppBar, Box, Toolbar } from "@mui/material";
+import { Container } from "reactstrap";
 import { ThemeSelector } from "@/components/views/ThemeSelector";
 import "./styles.scss";
 
 export function AppHeader() {
 	return (
-		<AppBar position="sticky" elevation={1} color="inherit" className="app-header">
-			<Toolbar className="app-header-toolbar">
-				<Box className="app-header-brand">
+		<header className="app-header sticky-top">
+			<Container fluid className="app-header-toolbar">
+				<div className="app-header-brand">
 					<img
 						src="https://ecoautomacao.com.br/wp-content/uploads/2025/12/eco_logo.png"
 						alt="ECO Automação"
 						className="app-header-logo"
 					/>
-				</Box>
+				</div>
 
 				<ThemeSelector />
-			</Toolbar>
-		</AppBar>
+			</Container>
+		</header>
 	);
 }

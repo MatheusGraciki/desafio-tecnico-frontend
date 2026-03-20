@@ -16,7 +16,7 @@ function getStoredValue<T extends string>(key: string, fallback: T, valid: reado
 	return fallback;
 }
 
-export function MuiAppThemeProvider({ children }: PropsWithChildren) {
+export function ThemeProvider({ children }: PropsWithChildren) {
 	const [colorTheme, setColorThemeState] = useState<ColorTheme>(() =>
 		getStoredValue(STORAGE_KEY_THEME, "greenlime", THEME_NAMES),
 	);

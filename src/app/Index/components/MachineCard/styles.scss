@@ -5,13 +5,39 @@
 	}
 
 	&-metrics {
-		display: flex;
-		gap: 16px;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.75rem;
 		align-items: flex-start;
-		flex-wrap: wrap;
 
 	}
 
+	&-metric {
+		min-width: 0;
+	}
+
+	&-metric-label {
+		font-size: 0.7rem;
+		line-height: 1.1;
+	}
+
+
+@media (max-width: 1300px) {
+	.machine-card {
+		&-metrics {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.5rem;
+		}
+
+		&-metric-temperature {
+			grid-column: 1 / -1;
+		}
+
+		&-metric-label {
+			font-size: 0.65rem;
+		}
+	}
+}
 	&-status {
 		display: flex;
 		align-items: center;

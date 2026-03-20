@@ -2,6 +2,7 @@
   border-bottom: 1px solid var(--border);
   background-color: var(--card);
   color: var(--foreground);
+  z-index: 1000;
 }
 
 .app-header-toolbar {

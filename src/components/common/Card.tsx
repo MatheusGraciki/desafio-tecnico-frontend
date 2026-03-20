@@ -1,42 +1,32 @@
-import type { PropsWithChildren, ReactNode } from "react";
-import { Card, CardContent, Stack, Typography } from "@mui/material";
+import type { CSSProperties, PropsWithChildren, ReactNode } from "react";
+import { Card, CardBody } from "reactstrap";
 
 interface AppCardProps extends PropsWithChildren {
 	title?: ReactNode;
 	subtitle?: ReactNode;
 	action?: ReactNode;
-	contentSx?: object;
+	cardSx?: CSSProperties;
+	contentSx?: CSSProperties;
 }
 
-export function AppCard({ title, subtitle, action, children, contentSx }: AppCardProps) {
+export function AppCard({ title, subtitle, action, children, cardSx, contentSx }: AppCardProps) {
 	return (
-		<Card variant="outlined" sx={{ borderRadius: 2, height: "100%", width: "100%" }}>
-			<CardContent sx={contentSx}>
+		<Card
+			className="border"
+			style={{ borderRadius: "0.5rem", height: "100%", width: "100%", ...cardSx }}
+		>
+			<CardBody style={contentSx}>
 				{title || subtitle || action ? (
-					<Stack
-						direction="row"
-						justifyContent="space-between"
-						alignItems="flex-start"
-						spacing={1}
-						mb={1}
-					>
-						<Stack spacing={0}>
-							{title ? (
-								<Typography variant="h6" lineHeight={1.2}>
-									{title}
-								</Typography>
-							) : null}
-							{subtitle ? (
-								<Typography variant="body2" color="text.secondary" lineHeight={1.2}>
-									{subtitle}
-								</Typography>
-							) : null}
-						</Stack>
+					<div className="d-flex justify-content-between align-items-start mb-2 gap-2">
+						<div>
+							{title ? <h6 className="mb-0 lh-sm">{title}</h6> : null}
+							{subtitle ? <small className="text-secondary lh-sm">{subtitle}</small> : null}
+						</div>
 						{action}
-					</Stack>
+					</div>
 				) : null}
 				{children}
-			</CardContent>
+			</CardBody>
 		</Card>
 	);
 }
