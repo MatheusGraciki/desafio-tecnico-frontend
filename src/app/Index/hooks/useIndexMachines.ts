@@ -5,28 +5,52 @@ import type { Machine, MachineData } from "@/services/machines/type.d.ts";
 import { countMachinesByStatus, getStatusCategory } from "../utils/machine";
 import type { MachineStatusCount } from "../utils/machine/type";
 
-function aggregateMachineTimeline(machines: Machine[]): MachineData[] {
+function isToday(value?: string | null) {
+	if (!value) return false;
+
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return false;
+
+	const now = new Date();
+	return (
+		date.getFullYear() === now.getFullYear() &&
+		date.getMonth() === now.getMonth() &&
+		date.getDate() === now.getDate()
+	);
+}
+
+function aggregateMachineTimeline(machines?: Machine[] | null): MachineData[] {
 	const timeline = new Map<
 		string,
 		{ timestamp: string; rpm: number; potencia: number; temperatura: number; count: number }
 	>();
 
-	machines.forEach((machine) => {
-		machine.dados?.forEach((item) => {
+	const safeMachines = Array.isArray(machines) ? machines : [];
+
+	safeMachines.forEach((machine) => {
+		if (!Array.isArray(machine?.dados)) return;
+
+		machine.dados.forEach((item) => {
+			if (!item?.timestamp) return;
+
+			const rpm = Number.isFinite(item.rpm) ? item.rpm : 0;
+			const potencia = Number.isFinite(item.potencia) ? item.potencia : 0;
+			const temperatura = Number.isFinite(item.temperatura) ? item.temperatura : 0;
+
 			const existing = timeline.get(item.timestamp);
 			if (existing) {
-				existing.rpm += item.rpm;
-				existing.potencia += item.potencia;
-				existing.temperatura += item.temperatura;
+				existing.rpm += rpm;
+				existing.potencia += potencia;
+				existing.temperatura += temperatura;
 				existing.count += 1;
 				return;
 			}
 
 			timeline.set(item.timestamp, {
 				timestamp: item.timestamp,
-				rpm: item.rpm,
-				potencia: item.potencia,
-				temperatura: item.temperatura,
+				rpm,
+				potencia,
+				temperatura,
 				count: 1,
 			});
 		});
@@ -78,13 +102,20 @@ export function useIndexMachines() {
 	}, []);
 
 	const locations = useMemo(
-		() => ["all", ...new Set(machines.map((machine) => machine.local))],
+		() => [
+			"all",
+			...new Set(
+				machines
+					.map((machine) => machine?.local)
+					.filter((location): location is string => Boolean(location)),
+			),
+		],
 		[machines],
 	);
 
 	const filteredMachines = useMemo(() => {
 		if (selectedLocation === "all") return machines;
-		return machines.filter((machine) => machine.local === selectedLocation);
+		return machines.filter((machine) => machine?.local === selectedLocation);
 	}, [machines, selectedLocation]);
 
 	const machinesPerPage = 9;
@@ -110,10 +141,19 @@ export function useIndexMachines() {
 		[filteredMachines],
 	);
 
+	const alertsEnteredToday = useMemo(
+		() =>
+			filteredMachines.filter(
+				(machine) =>
+					getStatusCategory(machine?.status) === "alerta" && isToday(machine?.ultimaAtualizacao),
+			).length,
+		[filteredMachines],
+	);
+
 	const criticalMachines = useMemo(
 		() =>
 			filteredMachines
-				.filter((machine) => getStatusCategory(machine.status) === "alerta")
+				.filter((machine) => getStatusCategory(machine?.status) === "alerta")
 				.slice(0, 4),
 		[filteredMachines],
 	);
@@ -121,7 +161,7 @@ export function useIndexMachines() {
 	const warningMachines = useMemo(
 		() =>
 			filteredMachines
-				.filter((machine) => getStatusCategory(machine.status) === "atencao")
+				.filter((machine) => getStatusCategory(machine?.status) === "atencao")
 				.slice(0, 4),
 		[filteredMachines],
 	);
@@ -144,6 +184,7 @@ export function useIndexMachines() {
 		filteredMachines,
 		paginatedMachines,
 		statusCounts,
+		alertsEnteredToday,
 		criticalMachines,
 		warningMachines,
 		timelineData,

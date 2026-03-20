@@ -29,7 +29,12 @@ export function StatusCards({ items }: StatusCardsProps) {
 									<div className={`status-summary-icon ${statusTextClass}`}>{item.largeIcon}</div>
 									<h4 className={`status-summary-count ${statusTextClass}`}>
 										{item.count}
-										<span className="status-summary-percentage">({item.percentage}%)</span>
+										{item.percentage !== undefined ? (
+											<span className="status-summary-percentage">({item?.percentage}%)</span>
+										) : null}
+										{item.countDetail ? (
+											<span className="status-summary-percentage"> {item?.countDetail} </span>
+										) : null}
 									</h4>
 								</div>
 								<hr className="my-1" />

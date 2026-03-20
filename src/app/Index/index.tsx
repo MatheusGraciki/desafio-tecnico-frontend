@@ -83,6 +83,7 @@ export default function IndexPage() {
 		filteredMachines,
 		paginatedMachines,
 		statusCounts,
+		alertsEnteredToday,
 		criticalMachines,
 		warningMachines,
 		timelineData,
@@ -95,13 +96,14 @@ export default function IndexPage() {
 			key,
 			label: SUMMARY_META[key].label,
 			count: statusCounts[key],
-			percentage: Math.round((statusCounts[key] / total) * 100),
+			percentage: key === "operando" ? Math.round((statusCounts[key] / total) * 100) : undefined,
+			countDetail: key === "alerta" ? `(+${alertsEnteredToday} hoje)` : undefined,
 			textColor: SUMMARY_META[key].textColor,
 			buttonColor: SUMMARY_META[key].buttonColor,
 			smallIcon: SUMMARY_META[key].smallIcon,
 			largeIcon: SUMMARY_META[key].largeIcon,
 		}));
-	}, [filteredMachines, statusCounts]);
+	}, [alertsEnteredToday, filteredMachines, statusCounts]);
 
 	function handlePreviousPage() {
 		setMachinesPage((value) => (value === 0 ? totalMachinePages - 1 : value - 1));

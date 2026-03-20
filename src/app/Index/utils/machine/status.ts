@@ -8,12 +8,17 @@ const STATUS_KEYWORDS = {
 	atencao: ["atenção", "atencao", "manutenção", "manutencao", "baixa"],
 } as const;
 
-function normalizeStatus(status: string) {
+function normalizeStatus(status?: string | null) {
+	if (typeof status !== "string") return "";
 	return status.toLowerCase().trim();
 }
 
-export function getStatusCategory(status: string): MachineStatusCategory {
+export function getStatusCategory(status?: string | null): MachineStatusCategory {
 	const normalized = normalizeStatus(status);
+
+	if (!normalized) {
+		return "parada";
+	}
 
 	if (STATUS_KEYWORDS.operando.some((keyword) => normalized.includes(keyword))) {
 		return "operando";
@@ -31,10 +36,10 @@ export function getStatusCategory(status: string): MachineStatusCategory {
 		return "atencao";
 	}
 
-	return;
+	return "parada";
 }
 
-export function getStatusInfo(status: string): MachineStatusInfo {
+export function getStatusInfo(status?: string | null): MachineStatusInfo {
 	const category = getStatusCategory(status);
 
 	if (category === "operando") {
@@ -53,5 +58,5 @@ export function getStatusInfo(status: string): MachineStatusInfo {
 		return { category, label: "Parada", chipColor: "secondary" };
 	}
 
-	return;
+	return { category: "parada", label: "Parada", chipColor: "secondary" };
 }

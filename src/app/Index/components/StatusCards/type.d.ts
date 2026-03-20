@@ -4,7 +4,8 @@ export interface StatusCardItem {
 	key: string;
 	label: string;
 	count: number;
-	percentage: number;
+	percentage?: number;
+	countDetail?: string;
 	textColor: string;
 	buttonColor: "success" | "danger" | "warning" | "info" | "secondary";
 	smallIcon: ReactNode;
@@ -12,5 +13,5 @@ export interface StatusCardItem {
 }
 
 export interface StatusCardsProps {
-	items: SummaryCardItem[];
+	items: StatusCardItem[];
 }
