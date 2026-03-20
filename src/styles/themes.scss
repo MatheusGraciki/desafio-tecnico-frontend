@@ -793,12 +793,6 @@ $token-aliases: (
   bs-card-color: card-foreground,
   bs-primary: primary,
   bs-secondary: secondary,
-  bs-danger: destructive,
-  bs-warning: accent,
-  bs-warning-color: accent-foreground,
-  success: primary,
-  danger: destructive,
-  warning: accent,
 );
 
 html {
@@ -818,18 +812,18 @@ body {
   min-height: 100vh;
 }
 
-$text-utilities: (
-  primary: primary,
-  secondary: muted-foreground,
-  danger: destructive,
-  warning: accent,
-);
+// $text-utilities: (
+//   primary: primary,
+//   secondary: muted-foreground,
+//   danger: destructive,
+//   warning: accent,
+// );
 
-@each $class, $token in $text-utilities {
-  .text-#{$class} {
-    color: var(--#{$token}) !important;
-  }
-}
+// @each $class, $token in $text-utilities {
+//   .text-#{$class} {
+//     color: var(--#{$token}) !important;
+//   }
+// }
 
 .bg-body-secondary {
   background-color: var(--muted) !important;
