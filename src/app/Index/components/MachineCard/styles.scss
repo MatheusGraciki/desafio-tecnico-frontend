@@ -1,0 +1,20 @@
+.machine-card {
+	&.header {
+		display: flex;
+		flex-direction: column;
+	}
+
+	&.metrics {
+		display: flex;
+		gap: 16px;
+		align-items: flex-start;
+		flex-wrap: wrap;
+
+	}
+
+	&.status {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+}
