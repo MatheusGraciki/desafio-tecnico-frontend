@@ -1,6 +1,4 @@
 import { memo, useMemo } from "react";
-import { Box, Typography } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import { AppLineChart } from "@/components/common/Chart.tsx";
 import type { MachineChartProps } from "./type";
 import "./styles.scss";
@@ -17,8 +15,6 @@ function formatChartTimestamp(timestamp: string) {
 }
 
 export const MachineChart = memo(function MachineChart({ dados }: MachineChartProps) {
-	const theme = useTheme();
-
 	const chartData = useMemo(
 		() =>
 			dados.map((item) => ({
@@ -32,30 +28,33 @@ export const MachineChart = memo(function MachineChart({ dados }: MachineChartPr
 
 	if (!chartData.length) {
 		return (
-			<Box sx={{ py: 2 }}>
-				<Typography variant="body2" color="text.secondary">
-					Sem dados para exibir no gráfico.
-				</Typography>
-			</Box>
+			<div style={{ paddingBlock: 8 }}>
+				<small className="text-secondary">Sem dados para exibir no gráfico.</small>
+			</div>
 		);
 	}
 
+	const rootStyles = getComputedStyle(document.documentElement);
+	const primary = rootStyles.getPropertyValue("--primary").trim() || "#0d6efd";
+	const accent = rootStyles.getPropertyValue("--accent").trim() || "#6c757d";
+	const warning = rootStyles.getPropertyValue("--warning").trim() || "#ffc107";
+
 	return (
-		<Box className="machine-chart">
+		<div className="machine-chart">
 			<AppLineChart
 				data={chartData}
 				xKey="timestamp"
 				series={[
-					{ key: "rpm", label: "RPM", color: theme.palette.primary.main },
+					{ key: "rpm", label: "RPM", color: primary },
 					{
 						key: "potencia",
 						label: "Potência",
-						color: theme.palette.info?.main || theme.palette.secondary.main,
+						color: accent,
 					},
-					{ key: "temperatura", label: "Temperatura", color: theme.palette.warning.main },
+					{ key: "temperatura", label: "Temperatura", color: warning },
 				]}
 				height={220}
 			/>
-		</Box>
+		</div>
 	);
 });
