@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useTheme, type ColorTheme } from "@/contexts/theme-context";
 import { FaCheck, FaMoon, FaPalette, FaRegSun } from "react-icons/fa6";
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from "reactstrap";
@@ -51,21 +51,27 @@ export function ThemeSelector() {
 
 					{Object.entries(THEME_LABELS).map(([key, { label, color }]) => {
 						const isActive = colorTheme === key;
+						const activeItemStyle: CSSProperties | undefined = isActive
+							? { backgroundColor: `color-mix(in srgb, ${color} 16%, transparent)`, color }
+							: undefined;
 						return (
 							<DropdownItem
 								key={key}
-								active={isActive}
 								onClick={() => {
 									setColorTheme(key as ColorTheme);
 									handleCloseMenu();
 								}}
 								className="theme-selector-menu-item"
+								style={activeItemStyle}
 							>
 								<span className="theme-selector-item-main">
 									<span className="theme-selector-color-dot" style={{ backgroundColor: color }} />
 									<span className="theme-selector-item-label">{label}</span>
 								</span>
-								<span className="theme-selector-item-check">
+								<span
+									className="theme-selector-item-check"
+									style={isActive ? { color } : undefined}
+								>
 									{isActive ? <FaCheck size={12} /> : null}
 								</span>
 							</DropdownItem>

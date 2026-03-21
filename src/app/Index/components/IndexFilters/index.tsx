@@ -1,10 +1,11 @@
 import Select from "@/components/select";
 import type { IndexFiltersProps } from "./type";
 import "./styles.scss";
+import { TiLocation } from "react-icons/ti";
 
 export function IndexFilters({ selectedLocation, locations, onLocationChange }: IndexFiltersProps) {
 	const locationOptions = [
-		{ value: "all", label: "Local: Todos" },
+		{ value: "all", label: "Local: --" },
 		...locations
 			.filter((location) => location !== "all")
 			.map((location) => ({ value: location, label: `Local: ${location}` })),
@@ -20,6 +21,7 @@ export function IndexFilters({ selectedLocation, locations, onLocationChange }: 
 					options={locationOptions}
 					onChange={onLocationChange}
 					ariaLabel="Selecionar local"
+					icon={<TiLocation size={18} className="text-success" />}
 				/>
 			</div>
 

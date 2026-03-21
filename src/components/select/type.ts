@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export interface SelectOption {
 	value: string;
 	label: string;
@@ -15,4 +17,5 @@ export interface SelectProps {
 	id?: string;
 	name?: string;
 	ariaLabel?: string;
+	icon?: ReactNode;
 }

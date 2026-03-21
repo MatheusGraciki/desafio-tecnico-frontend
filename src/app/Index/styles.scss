@@ -18,6 +18,13 @@
 	gap: 0.5rem;
 }
 
+.index-distribution-separator {
+	flex: 1;
+	height: 1px;
+	background-color: var(--border);
+	min-width: 1.5rem;
+}
+
 .index-pagination {
 	gap: 0.5rem;
 }

@@ -1,0 +1,17 @@
+@use "sass:map";
+@use "./themes" as *;
+
+@include temas using ($mapa) {
+
+	.badge {
+		border: 1px solid transparent;
+		min-height: 1.5rem;
+		justify-content: center;
+		align-items: center;
+	}
+  .badge.bg-secondary {
+    background-color: #{map.get($mapa, secondary)} !important;
+    color: #{map.get($mapa, secondary-foreground)} !important;
+    border-color: #{map.get($mapa, border)};
+  }
+}

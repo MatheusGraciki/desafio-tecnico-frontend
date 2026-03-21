@@ -50,6 +50,13 @@ export function ThemeProvider({ children }: PropsWithChildren) {
 	}, [mode, setMode]);
 
 	useLayoutEffect(() => {
+		const themeClassNames = THEME_NAMES.flatMap((themeName) => [
+			`light-${themeName}`,
+			`dark-${themeName}`,
+		]);
+
+		document.documentElement.classList.remove(...themeClassNames);
+		document.documentElement.classList.add(`${mode}-${colorTheme}`);
 		document.documentElement.setAttribute("data-theme", colorTheme);
 		document.documentElement.classList.toggle("dark", mode === "dark");
 		document.documentElement.setAttribute("data-bs-theme", mode);

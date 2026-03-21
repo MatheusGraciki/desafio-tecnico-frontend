@@ -1,0 +1,25 @@
+@use "sass:map";
+@use "./themes" as *;
+
+.btn-primary {
+  --bs-btn-bg: var(--primary);
+  --bs-btn-border-color: var(--primary);
+  --bs-btn-color: var(--primary-foreground);
+}
+
+@include temas using ($mapa) {
+  .btn-primary {
+    --bs-btn-bg: #{map.get($mapa, primary)};
+    --bs-btn-color: #{map.get($mapa, primary-foreground)};
+    --bs-btn-hover-bg: #{map.get($mapa, theme-color-2)};
+    --bs-btn-hover-border-color: #{map.get($mapa, theme-color-2)};
+    --bs-btn-active-bg: #{map.get($mapa, theme-color-2)};
+    --bs-btn-active-border-color: #{map.get($mapa, theme-color-2)};
+  }
+
+	.svg{
+		color: var(--primary-foreground) !important; ;
+		fill: var(--primary) !important;
+	}
+
+}

@@ -19,16 +19,16 @@
 }
 
 @mixin temas {
-  @each $tema, $mapa in $themes {
-    html[data-theme="#{$tema}"]:not(.dark) {
+  @each $tema, $mapa in $temas {
+    .#{$tema} {
       @content ($mapa);
     }
   }
 }
 
 @mixin temasE {
-  @each $tema, $mapa in $themes-dark {
-    html.dark[data-theme="#{$tema}"] {
+  @each $tema, $mapa in $temas {
+    &.#{$tema} {
       @content ($mapa);
     }
   }
@@ -783,6 +783,26 @@ $themes-dark: (
   )
 );
 
+$temas: ();
+
+@each $tema, $mapa in $themes {
+  $temas: map.merge(
+    $temas,
+    (
+      "light-#{$tema}": $mapa,
+    )
+  );
+}
+
+@each $tema, $mapa in $themes-dark {
+  $temas: map.merge(
+    $temas,
+    (
+      "dark-#{$tema}": $mapa,
+    )
+  );
+}
+
 // default theme used for :root
 $default-theme: map.get($themes, blueolympic);
 
@@ -797,74 +817,4 @@ $default-theme: map.get($themes, blueolympic);
 
 @each $theme-name, $theme-map in $themes-dark {
   @include apply-theme-scope($theme-name, $theme-map, true);
-}
-
-$token-aliases: (
-  bs-body-bg: background,
-  bs-body-color: foreground,
-  bs-border-color: border,
-  bs-secondary-color: muted-foreground,
-  bs-secondary-bg: muted,
-  bs-card-bg: card,
-  bs-card-color: card-foreground,
-  bs-primary: primary,
-  bs-secondary: secondary,
-);
-
-html {
-  @each $alias, $token in $token-aliases {
-    --#{$alias}: var(--#{$token});
-  }
-
-  --component-btn-bg: var(--primary);
-  --component-btn-color: var(--primary-foreground);
-  --component-btn-border: var(--primary);
-  --component-btn-hover-bg: var(--theme-color-2);
-  --component-btn-hover-border: var(--theme-color-2);
-  --component-modal-bg: var(--card);
-  --component-modal-color: var(--card-foreground);
-  --component-modal-border: var(--border);
-  --component-select-bg: var(--input-background);
-  --component-select-color: var(--foreground);
-  --component-select-border: var(--border);
-  --component-select-icon: var(--theme-color-1);
-  --component-focus-ring: var(--ring);
-}
-
-@include temas using ($mapa) {
-  --component-btn-hover-bg: #{map.get($mapa, theme-color-2)};
-  --component-btn-hover-border: #{map.get($mapa, theme-color-2)};
-}
-
-@include temasE using ($mapa) {
-  --component-btn-hover-bg: #{map.get($mapa, theme-color-3)};
-  --component-btn-hover-border: #{map.get($mapa, theme-color-3)};
-}
-
-html,
-body,
-#root {
-  background-color: var(--background);
-  color: var(--foreground);
-}
-
-body {
-  min-height: 100vh;
-}
-
-// $text-utilities: (
-//   primary: primary,
-//   secondary: muted-foreground,
-//   danger: destructive,
-//   warning: accent,
-// );
-
-// @each $class, $token in $text-utilities {
-//   .text-#{$class} {
-//     color: var(--#{$token}) !important;
-//   }
-// }
-
-.bg-body-secondary {
-  background-color: var(--muted) !important;
 }

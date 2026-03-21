@@ -1,0 +1,11 @@
+@use "sass:map";
+@use "./themes" as *;
+
+@include temas using ($mapa) {
+	.card{
+		background-color: #{map.get($mapa, card)};
+		color: #{map.get($mapa, foreground)};
+		border-color: #{map.get($mapa, border)};
+		border: 1px solid var(--border);
+	}
+}

@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
-import { FaChevronLeft, FaChevronRight, FaRegCircleCheck } from "react-icons/fa6";
-import { Alert, Button, Col, Row } from "reactstrap";
+import { FaRegCircleCheck } from "react-icons/fa6";
+import { Alert, Col, Row } from "reactstrap";
 
 import { AnalysisSidebar } from "./components/AnalysisSidebar/index.tsx";
 import { IndexFilters } from "./components/IndexFilters/index.tsx";
+import { StatusDistribution } from "./components/StatusDistribution/index.tsx";
 import { MachineCard } from "./components/MachineCard/index.tsx";
 import { StatusCards } from "./components/StatusCards/index.tsx";
 import { useIndexMachines } from "./hooks/useIndexMachines";
@@ -138,33 +139,18 @@ export default function IndexPage() {
 							</div>
 
 							<div className="index-distribution">
-								<div className="index-distribution-header d-flex align-items-center justify-content-between">
+								<div className="index-distribution-header d-flex align-items-center">
 									<h2 className="h6 mb-0">Distribuição de Status</h2>
+									<div className="index-distribution-separator" aria-hidden="true" />
 
 									{filteredMachines.length > machinesPerPage ? (
-										<div className="index-pagination d-flex align-items-center">
-											<Button
-												color="link"
-												className="p-0 index-pagination-button"
-												onClick={handlePreviousPage}
-												aria-label="Página anterior"
-											>
-												<FaChevronLeft size={12} />
-											</Button>
-
-											<small className="text-secondary">
-												{machinesPage + 1}/{totalMachinePages}
-											</small>
-
-											<Button
-												color="link"
-												className="p-0 index-pagination-button"
-												onClick={handleNextPage}
-												aria-label="Próxima página"
-											>
-												<FaChevronRight size={12} />
-											</Button>
-										</div>
+										<StatusDistribution
+											currentPage={machinesPage}
+											totalPages={totalMachinePages}
+											onPrevious={handlePreviousPage}
+											onNext={handleNextPage}
+											onSelectPage={setMachinesPage}
+										/>
 									) : null}
 								</div>
 								<div className="index-machine-grid">

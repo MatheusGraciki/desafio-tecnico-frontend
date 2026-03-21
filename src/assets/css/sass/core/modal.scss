@@ -1,0 +1,26 @@
+@use "sass:map";
+@use "./themes" as *;
+
+.modal-content {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-color: var(--border);
+}
+
+.modal-header,
+.modal-footer {
+  border-color: var(--border);
+}
+
+@include temas using ($mapa) {
+  .modal-content {
+    background-color: #{map.get($mapa, card)};
+    color: #{map.get($mapa, card-foreground)};
+    border-color: #{map.get($mapa, border)};
+  }
+
+  .modal-header,
+  .modal-footer {
+    border-color: #{map.get($mapa, border)};
+  }
+}
