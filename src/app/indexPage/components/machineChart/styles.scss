@@ -1,0 +1,65 @@
+.machine-chart {
+	width: 100%;
+	min-width: 0;
+}
+
+.machine-chart-tooltip {
+	background: #fff;
+	padding: clamp(9px, 1vw, 12px) clamp(10px, 1.1vw, 14px);
+	border-radius: 12px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+	width: clamp(170px, 86%, 240px);
+	max-width: 100%;
+	font-size: clamp(12px, 0.9vw, 13px);
+}
+
+.tooltip-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.tooltip-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	flex: 0 0 auto;
+}
+
+.tooltip-percentage {
+	font-weight: 600;
+}
+
+.tooltip-divider {
+	height: 1px;
+	background: #eee;
+	margin: 8px 0;
+}
+
+.tooltip-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.tooltip-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
+}
+
+.tooltip-name {
+	color: #374151;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tooltip-value {
+	font-weight: 500;
+	text-align: right;
+	flex: 0 0 auto;
+}

@@ -1,0 +1,26 @@
+.machine-card {
+	min-height: 100%;
+}
+
+.machine-card-header {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.machine-card-metrics {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 576px) {
+	.machine-card-metrics {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+.machine-card-status {
+	flex-wrap: wrap;
+	justify-content: space-between;
+}

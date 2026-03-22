@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { useState, useCallback, useLayoutEffect } from "react";
-import { ThemeContext, THEME_NAMES, type ColorTheme, type Mode } from "@/contexts/theme-context";
+import { ThemeContext, THEME_NAMES, type ColorTheme, type Mode } from "@/contexts/themeContext";
 
 const STORAGE_KEY_THEME = "app-color-theme-v2";
 const STORAGE_KEY_MODE = "app-mode-v2";

@@ -1,0 +1,28 @@
+.index-pagination-control {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.index-pagination-dots {
+	display: flex;
+	gap: 0.35rem;
+}
+
+.index-pagination-dot,
+.index-pagination-action {
+	border: 0;
+	background: var(--muted);
+	color: var(--foreground);
+	border-radius: 999px;
+	width: 1.5rem;
+	height: 1.5rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.index-pagination-dot.is-active {
+	background: var(--primary);
+	color: var(--primary-foreground);
+}

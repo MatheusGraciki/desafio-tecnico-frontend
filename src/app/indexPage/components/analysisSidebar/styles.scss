@@ -1,0 +1,17 @@
+.analysis-sidebar {
+	height: 100%;
+}
+
+.analysis-sidebar-open,
+.analysis-sidebar-closed {
+	min-height: 100%;
+}
+
+.analysis-sidebar-content {
+	gap: 0.75rem;
+}
+
+.analysis-sidebar-toggle {
+	display: flex;
+	justify-content: flex-end;
+}

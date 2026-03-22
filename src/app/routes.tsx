@@ -1,23 +1,23 @@
 import type { ComponentType } from "react";
 import type { RouteObject } from "react-router-dom";
 import { Outlet, useRoutes } from "react-router-dom";
-import { AppHeader } from "@/components/views/AppHeader";
+import { AppHeader } from "@/components/views/appHeader";
 
 /**
  * @description
  * Gera automaticamente as rotas da aplicação com base na estrutura de pastas.
  *
- * - Descobre páginas em ./xx/index.tsx` usando `import.meta.glob`
- * - Converte nomes de pastas em rotas (ex: `Index` -> `/`, `NotFound` -> `*`)
+ * - Descobre páginas em ./xx/index.tsx usando `import.meta.glob`
+ * - Converte nomes de pastas em rotas (ex: `indexPage` -> `/`, `notFoundPage` -> `*`)
  * - Aplica `AppLayout` como layout padrão (header + conteúdo)
- * - Retorna a árvore de rotas usando `useRoutes
+ * - Retorna a árvore de rotas usando `useRoutes`
  *
  * @returns {React.ReactElement | null} Estrutura de rotas renderizada
  */
 
 const modules = import.meta.glob<{
 	default: ComponentType;
-}>("./**/index.tsx", { eager: true });
+}>("./*/index.tsx", { eager: true });
 
 interface PageRoute {
 	routeKey: string;
@@ -53,11 +53,11 @@ function AppLayout() {
 export function AppRoutes() {
 	const pages = buildPageRoutes();
 
-	const indexPage = pages.find((page) => page.routeKey === "index");
-	const notFoundPage = pages.find((page) => page.routeKey === "notfound");
+	const indexPage = pages.find((page) => page.routeKey === "indexpage");
+	const notFoundPage = pages.find((page) => page.routeKey === "notfoundpage");
 
 	const children: RouteObject[] = pages
-		.filter((page) => !["index", "notfound"].includes(page.routeKey))
+		.filter((page) => !["indexpage", "notfoundpage"].includes(page.routeKey))
 		.map((page) => ({
 			path: page.routeKey,
 			element: <page.component />,

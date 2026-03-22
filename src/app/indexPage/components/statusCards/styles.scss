@@ -1,0 +1,19 @@
+.status-summary-cards {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.status-summary-card-item {
+	height: 100%;
+}
+
+.status-summary-title {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+}
+
+.status-summary-content {
+	gap: 0.5rem;
+}
