@@ -160,7 +160,7 @@ export const MachineChart = memo(function MachineChart({ machines }: MachineChar
 	if (!chartData.length) {
 		return (
 			<div style={{ paddingBlock: 8 }}>
-				<small className="text-secondary">Sem alertas para exibir no gráfico.</small>
+				<small className="text-secondary">Sem alertas para exibir no gráficentero.</small>
 			</div>
 		);
 	}
@@ -168,6 +168,7 @@ export const MachineChart = memo(function MachineChart({ machines }: MachineChar
 	return (
 		<div className="machine-chart">
 			<DonutChart
+				title="Resumo dos Alertas"
 				data={chartData}
 				renderTooltip={(item, totalCount) =>
 					buildTooltip(

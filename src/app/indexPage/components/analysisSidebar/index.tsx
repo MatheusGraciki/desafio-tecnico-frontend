@@ -64,7 +64,6 @@ export function AnalysisSidebar({
 
 						<hr className="my-0" />
 
-						<small className="text-secondary fw-semibold">Distribuição de Alertas</small>
 						<MachineChart machines={machines} />
 					</div>
 				</Card>

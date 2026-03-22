@@ -26,7 +26,9 @@ export function StatusCards({ items }: StatusCardsProps) {
 						>
 							<div className="status-summary-content d-flex flex-column">
 								<div className="status-summary-main d-flex justify-content-center align-items-center">
-									<div className={`status-summary-icon ${statusTextClass}`}>{item.largeIcon}</div>
+									{item.largeIcon ? (
+										<div className={`status-summary-icon ${statusTextClass}`}>{item.largeIcon}</div>
+									) : null}
 									<h4 className={`status-summary-count ${statusTextClass}`}>
 										{item.count}
 										{item.percentage !== undefined ? (

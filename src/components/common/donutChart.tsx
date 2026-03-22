@@ -14,9 +14,10 @@ interface DonutChartProps {
 	data: DonutChartItem[];
 	renderTooltip?: (item: DonutChartItem, total: number) => ReactNode;
 	height?: number;
+	title?: string;
 }
 
-export function DonutChart({ data, renderTooltip, height = 220 }: DonutChartProps) {
+export function DonutChart({ data, renderTooltip, height = 220, title }: DonutChartProps) {
 	const [activeItem, setActiveItem] = useState<DonutChartItem | null>(null);
 	const total = useMemo(
 		() =>
@@ -46,9 +47,10 @@ export function DonutChart({ data, renderTooltip, height = 220 }: DonutChartProp
 	);
 
 	return (
-		<div className="donut-chart" style={{ minHeight: height }}>
+		<div className="donut-chart" style={{ minHeight: height, position: "relative" }}>
 			<div className="donut-chart-figure">
-				<PieChart responsive style={{ width: "100%", height, aspectRatio: 1 }}>
+				{title && <div className="donut-chart-title-text">{title}</div>}
+				<PieChart style={{ width: "100%", height, aspectRatio: 1 }}>
 					<Pie
 						data={data}
 						dataKey="value"

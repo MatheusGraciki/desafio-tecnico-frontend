@@ -120,7 +120,7 @@ export default function IndexPage() {
 			) : (
 				<>
 					<Row className="g-3 align-items-start">
-						<Col xs={8} xxl={8} className="index-main-col">
+						<Col xs={12} md={8} xxl={9} className="index-main-col">
 							<Row className="g-3">
 								<IndexFilters
 									selectedLocation={selectedLocation}
@@ -156,7 +156,7 @@ export default function IndexPage() {
 							</div>
 						</Col>
 
-						<Col xs={4} xxl={4} className="index-side-col">
+						<Col xs={12} md={4} xxl={3} className="index-side-col">
 							<AnalysisSidebar
 								analysisOpen={analysisOpen}
 								onToggle={() => setAnalysisOpen((value) => !value)}
