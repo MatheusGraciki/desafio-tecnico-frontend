@@ -35,10 +35,6 @@ type ChartGroup = {
 	icon: ReactNode;
 };
 
-const ALERT_SEVERITY_LOOKUP = Object.fromEntries(
-	Object.entries(ALERT_SEVERITY).map(([label, severity]) => [normalizeAlert(label), severity]),
-) as Record<string, AlertSeverity>;
-
 function normalizeAlert(value: string) {
 	return value
 		.normalize("NFD")
@@ -47,6 +43,10 @@ function normalizeAlert(value: string) {
 		.trim()
 		.replace(/\s+/g, " ");
 }
+
+const ALERT_SEVERITY_LOOKUP = Object.fromEntries(
+	Object.entries(ALERT_SEVERITY).map(([label, severity]) => [normalizeAlert(label), severity]),
+) as Record<string, AlertSeverity>;
 
 function getAlertSeverity(alert: string): AlertSeverity | undefined {
 	return ALERT_SEVERITY_LOOKUP[normalizeAlert(alert)];
@@ -118,22 +118,22 @@ function buildTooltip(group: ChartGroup, total: number) {
 
 	return (
 		<div className="machine-chart-tooltip">
-			<div className="tooltip-header">
-				<span className="tooltip-dot" style={{ backgroundColor: group.color }} />
-				<strong>{group.label}</strong>
-				<span className="tooltip-percentage">{percentage}%</span>
+			<div className="machine-chart-tooltip-header">
+				<span className="machine-chart-tooltip-dot" style={{ backgroundColor: group.color }} />
+				<strong className="machine-chart-tooltip-title">{group.label}</strong>
+				<span className="machine-chart-tooltip-percentage">{percentage}%</span>
 			</div>
 
-			<div className="tooltip-divider" />
+			<div className="machine-chart-tooltip-divider" />
 
-			<div className="tooltip-list">
+			<div className="machine-chart-tooltip-list">
 				{Object.entries(group.details).map(([name, value]) => {
 					const p = total ? ((value / total) * 100).toFixed(1) : "0.0";
 
 					return (
-						<div key={name} className="tooltip-item">
-							<span className="tooltip-name">{name}</span>
-							<span className="tooltip-value">
+						<div key={name} className="machine-chart-tooltip-item">
+							<span className="machine-chart-tooltip-name">{name}</span>
+							<span className="machine-chart-tooltip-value">
 								{p}% <span className="text-muted">({value})</span>
 							</span>
 						</div>
@@ -160,7 +160,7 @@ export const MachineChart = memo(function MachineChart({ machines }: MachineChar
 	if (!chartData.length) {
 		return (
 			<div style={{ paddingBlock: 8 }}>
-				<small className="text-secondary">Sem alertas para exibir no gráficentero.</small>
+				<small className="text-secondary">Sem alertas para exibir no gráfico.</small>
 			</div>
 		);
 	}
@@ -182,7 +182,7 @@ export const MachineChart = memo(function MachineChart({ machines }: MachineChar
 						totalCount,
 					)
 				}
-				height={220}
+				height={180}
 			/>
 		</div>
 	);

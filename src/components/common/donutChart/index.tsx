@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Cell, Pie, PieChart } from "recharts";
-import "./donutChart.scss";
+import "./index.scss";
 
 export interface DonutChartItem {
 	name: string;
@@ -19,12 +19,9 @@ interface DonutChartProps {
 
 export function DonutChart({ data, renderTooltip, height = 220, title }: DonutChartProps) {
 	const [activeItem, setActiveItem] = useState<DonutChartItem | null>(null);
+
 	const total = useMemo(
-		() =>
-			data.reduce((sum, item) => {
-				const value = Number.isFinite(item.value) ? item.value : 0;
-				return sum + value;
-			}, 0),
+		() => data.reduce((s, item) => s + (Number.isFinite(item.value) ? item.value : 0), 0),
 		[data],
 	);
 
@@ -49,7 +46,7 @@ export function DonutChart({ data, renderTooltip, height = 220, title }: DonutCh
 	return (
 		<div className="donut-chart" style={{ minHeight: height, position: "relative" }}>
 			<div className="donut-chart-figure">
-				{title && <div className="donut-chart-title-text">{title}</div>}
+				{title ? <div className="donut-chart-title-text">{title}</div> : null}
 				<PieChart style={{ width: "100%", height, aspectRatio: 1 }}>
 					<Pie
 						data={data}
@@ -70,12 +67,16 @@ export function DonutChart({ data, renderTooltip, height = 220, title }: DonutCh
 				</PieChart>
 			</div>
 
-			<div className="donut-chart-legend">
+			<div className="donut-chart-legend-wrap">
 				{activeItem && renderTooltip ? (
-					<div className="donut-chart-tooltip-overlay">{renderTooltip(activeItem, total)}</div>
+					<div className="donut-chart-tooltip-layer" aria-hidden>
+						{renderTooltip(activeItem, total)}
+					</div>
 				) : null}
-				{legendItems}
-				{total === 0 ? <small className="text-secondary">Sem dados para exibir.</small> : null}
+				<div className="donut-chart-legend">
+					{legendItems}
+					{total === 0 ? <small className="text-secondary">Sem dados para exibir.</small> : null}
+				</div>
 			</div>
 		</div>
 	);
