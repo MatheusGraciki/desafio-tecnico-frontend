@@ -1,5 +1,25 @@
+.machine-card-trigger {
+	display: block;
+	width: 100%;
+	min-height: 100%;
+	padding: 0;
+	margin: 0;
+	border: 0;
+	background: transparent;
+	text-align: inherit;
+	color: inherit;
+	cursor: pointer;
+	border-radius: inherit;
+
+	&:focus-visible {
+		outline: 2px solid var(--bs-primary);
+		outline-offset: 2px;
+	}
+}
+
 .machine-card {
 	min-height: 100%;
+	gap: 0.5rem;
 }
 
 .machine-card-header {
@@ -8,19 +28,127 @@
 	gap: 0.25rem;
 }
 
-.machine-card-metrics {
-	display: grid;
-	gap: 0.75rem;
-	grid-template-columns: repeat(1, minmax(0, 1fr));
+.machine-card-type-icons {
+	opacity: 0.65;
 }
 
-@media (min-width: 576px) {
-	.machine-card-metrics {
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+.machine-card-rule {
+	flex-shrink: 0;
+	width: 100%;
+	margin: 0;
+	border: 0;
+	border-top: 1px solid var(--bs-border-color, #dee2e6);
+	opacity: 0.85;
+}
+
+.machine-card-body-metrics {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: 0.75rem 1rem;
+}
+
+.machine-card-metrics-left {
+	display: flex;
+	flex-direction: column;
+	gap: 0.65rem;
+	flex: 1 1 9rem;
+	min-width: 0;
+}
+
+.machine-card-metrics-right {
+	display: flex;
+	flex: 0 1 7.5rem;
+	min-width: 0;
+	align-items: flex-start;
+	justify-content: flex-end;
+}
+
+.machine-card-metric {
+	--machine-card-icon-col: 1.125rem;
+
+	display: grid;
+	grid-template-columns: var(--machine-card-icon-col) minmax(0, 1fr);
+	grid-template-rows: auto auto;
+	align-items: center;
+	column-gap: 0.5rem;
+	row-gap: 0.15rem;
+	min-width: 0;
+}
+
+.machine-card-metric-gutter {
+	grid-row: 1;
+	grid-column: 1;
+	width: var(--machine-card-icon-col);
+	min-width: var(--machine-card-icon-col);
+}
+
+.machine-card-metric-label {
+	grid-row: 1;
+	grid-column: 2;
+	font-size: 0.7rem;
+	line-height: 1.15;
+	margin: 0;
+}
+
+.machine-card-metric-icon {
+	grid-row: 2;
+	grid-column: 1;
+	justify-self: center;
+	width: 1.125rem;
+	height: 1.125rem;
+	flex-shrink: 0;
+}
+
+.machine-card-metric-value {
+	grid-row: 2;
+	grid-column: 2;
+	min-width: 0;
+	line-height: 1.25;
+	font-size: 0.95rem;
+}
+
+.machine-card-footer-bar {
+	display: flex;
+	align-items: center;
+	justify-content: start;
+	gap: 0.5rem;
+	width: 50%;
+	margin-top: auto;
+	padding: 0.5rem 0.75rem;
+	border-radius: 0.375rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.2;
+
+	&.machine-card-footer-text {
+		min-width: 0;
+		text-align: center;
+	}
+
+	&.machine-card-footer-bar--success {
+		background-color: #4caf50;
+		color: #fff;
+	}
+
+
+	&.machine-card-footer-bar--danger {
+	background-color: #e53935;
+	color: #fff;
+	}
+
+	&.machine-card-footer-bar--warning {
+		background-color: #ffb300;
+		color: #fff;
+	}
+
+	&.machine-card-footer-bar--secondary {
+		background-color: var(--secondary);
+		color: #fff;
 	}
 }
 
-.machine-card-status {
-	flex-wrap: wrap;
-	justify-content: space-between;
-}
+
+
+
+
