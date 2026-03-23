@@ -1,8 +1,7 @@
-import { useMemo, useState } from "react";
-import { FaRegCircleCheck } from "react-icons/fa6";
+import { useMemo } from "react";
+import { FaBell, FaCircleExclamation, FaRegCircleCheck } from "react-icons/fa6";
 import { Alert, Col, Row } from "reactstrap";
-import { MdOutlineCrisisAlert, MdOutlineSpeed } from "react-icons/md";
-import { LuClock12, LuClock4, LuClock6 } from "react-icons/lu";
+import { LuClock12, LuClock4 } from "react-icons/lu";
 
 import { AnalysisSidebar } from "./components/analysisSidebar";
 import { IndexFilters } from "./components/indexFilters";
@@ -30,15 +29,15 @@ const SUMMARY_META: Record<
 		label: "Em Alerta",
 		textColor: "danger",
 		buttonColor: "danger",
-		smallIcon: <MdOutlineCrisisAlert size={16} />,
-		largeIcon: null,
+		smallIcon: null,
+		largeIcon: <FaBell size={28} />,
 	},
 	atencao: {
 		label: "Em Atenção",
 		textColor: "warning",
 		buttonColor: "warning",
-		smallIcon: <MdOutlineSpeed size={16} />,
-		largeIcon: <LuClock6 size={30} />,
+		smallIcon: null,
+		largeIcon: <FaCircleExclamation size={28} />,
 	},
 	parada: {
 		label: "Parada ou Offline",
@@ -66,7 +65,6 @@ function DashboardSkeleton() {
 }
 
 export default function IndexPage() {
-	const [analysisOpen, setAnalysisOpen] = useState(true);
 	const {
 		loading,
 		error,
@@ -158,8 +156,6 @@ export default function IndexPage() {
 
 						<Col xs={12} md={4} xxl={3} className="index-side-col">
 							<AnalysisSidebar
-								analysisOpen={analysisOpen}
-								onToggle={() => setAnalysisOpen((value) => !value)}
 								criticalMachines={criticalMachines}
 								warningMachines={warningMachines}
 								machines={filteredMachines}

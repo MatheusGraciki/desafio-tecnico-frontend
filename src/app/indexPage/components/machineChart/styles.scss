@@ -3,63 +3,87 @@
 	min-width: 0;
 }
 
+/* Conteúdo do tooltip (portal): preenche o max-width definido no DonutChart */
 .machine-chart-tooltip {
-	background: #fff;
-	padding: clamp(9px, 1vw, 12px) clamp(10px, 1.1vw, 14px);
-	border-radius: 12px;
-	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-	width: clamp(170px, 86%, 240px);
+	box-sizing: border-box;
+	width: 100%;
 	max-width: 100%;
-	font-size: clamp(12px, 0.9vw, 13px);
+	min-width: 0;
+	margin: 0;
+	padding: 0.5rem 0.5rem 0.5rem 0.45rem;
+	border-radius: 0.5rem;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+	background: #fff;
+	font-size: clamp(0.6875rem, 1.8vw, 0.8125rem);
+	line-height: 1.35;
 }
 
-.tooltip-header {
+.machine-chart-tooltip-header {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: space-between;
-	gap: 8px;
+	gap: 0.35rem;
+	flex-wrap: wrap;
 }
 
-.tooltip-dot {
+.machine-chart-tooltip-dot {
 	width: 10px;
 	height: 10px;
 	border-radius: 50%;
 	flex: 0 0 auto;
+	margin-top: 0.2em;
 }
 
-.tooltip-percentage {
-	font-weight: 600;
-}
-
-.tooltip-divider {
-	height: 1px;
-	background: #eee;
-	margin: 8px 0;
-}
-
-.tooltip-list {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.tooltip-item {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 8px;
-}
-
-.tooltip-name {
-	color: #374151;
+.machine-chart-tooltip-title {
+	flex: 1 1 6rem;
 	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	word-break: break-word;
+	hyphens: auto;
+}
+
+.machine-chart-tooltip-percentage {
+	font-weight: 600;
+	flex: 0 0 auto;
 	white-space: nowrap;
 }
 
-.tooltip-value {
+.machine-chart-tooltip-divider {
+	height: 1px;
+	background: #eee;
+	margin: 0.4rem 0;
+}
+
+.machine-chart-tooltip-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.machine-chart-tooltip-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 0.4rem;
+}
+
+.machine-chart-tooltip-name {
+	color: #374151;
+	min-width: 0;
+	flex: 1 1 auto;
+	overflow-wrap: break-word;
+	word-break: normal;
+}
+
+.machine-chart-tooltip-value {
 	font-weight: 500;
 	text-align: right;
-	flex: 0 0 auto;
+	flex: 0 1 auto;
+	min-width: 0;
+	white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+	.machine-chart-tooltip-value {
+		white-space: normal;
+	}
 }

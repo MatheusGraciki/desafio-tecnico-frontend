@@ -1,13 +1,16 @@
-import { memo } from "react";
-import { Badge } from "reactstrap";
+import { memo, useMemo, type ComponentType } from "react";
 import {
 	FaBolt,
 	FaCircleCheck,
 	FaCircleExclamation,
 	FaCirclePause,
+	FaDroplet,
 	FaGaugeHigh,
+	FaGear,
+	FaIndustry,
 	FaTemperatureThreeQuarters,
 	FaTriangleExclamation,
+	FaWaveSquare,
 } from "react-icons/fa6";
 import { Card } from "@/components/common/card";
 import { getLastMachineData, getStatusInfo } from "../../utils/machine";
@@ -21,67 +24,96 @@ const statusIconMap = {
 	parada: FaCirclePause,
 };
 
+function formatRpm(value: number | undefined) {
+	if (value === undefined || Number.isNaN(value)) return "--";
+	return `${new Intl.NumberFormat("pt-BR").format(value)} rpm`;
+}
+
+function pickFooterIcon(
+	category: string,
+	footerLabel: string,
+): ComponentType<{ className?: string; size?: number }> {
+	const lower = footerLabel.toLowerCase();
+
+	if (category === "operando") return FaBolt;
+	if (/temp|°|celsius/i.test(lower)) return FaTemperatureThreeQuarters;
+	if (/lubrific|óleo|oleo/i.test(lower)) return FaDroplet;
+	if (/vibr|instabilidade|onda/i.test(lower)) return FaWaveSquare;
+
+	return statusIconMap[category as keyof typeof statusIconMap] ?? FaCircleExclamation;
+}
+
 export const MachineCard = memo(function MachineCard({ machine }: MachineCardProps) {
 	const statusInfo = getStatusInfo(machine.status);
 	const lastData = getLastMachineData(machine);
-	const StatusIcon = statusIconMap[statusInfo.category as keyof typeof statusIconMap];
-	const statusColorClass = `text-${statusInfo.chipColor}`;
+
+	const footerLabel = useMemo(() => {
+		if (statusInfo.category === "operando") return "Operando";
+		if (machine.alertas?.length) return machine.alertas[0];
+		return machine.status;
+	}, [machine.alertas, machine.status, statusInfo.category]);
+
+	const FooterIcon = useMemo(
+		() => pickFooterIcon(statusInfo.category, footerLabel),
+		[footerLabel, statusInfo.category],
+	);
+
+	const footerToneClass = `machine-card-footer-bar--${statusInfo.chipColor}`;
 
 	return (
 		<Card>
-			<div className="d-flex flex-column gap-2 machine-card">
+			<div className="d-flex flex-column machine-card h-100">
 				<div className="machine-card-header">
-					<h6 className="mb-0 fw-semibold">{machine.codigo}</h6>
-					<small className="text-secondary">Local: {machine.local}</small>
-				</div>
-
-				<hr className="my-1" />
-
-				<div className="machine-card-metrics">
-					<div className="machine-card-metric d-flex align-items-center gap-2 flex-fill">
-						<FaGaugeHigh className="text-primary" />
-						<div>
-							<small className="machine-card-metric-label text-secondary d-block">RPM</small>
-							<div className="fw-semibold">{lastData?.rpm ?? "--"}</div>
-						</div>
-					</div>
-
-					<div className="machine-card-metric d-flex align-items-center gap-2 flex-fill">
-						<FaBolt className="text-secondary" />
-						<div>
-							<small className="machine-card-metric-label text-secondary d-block">Potência</small>
-							<div className="fw-semibold">{lastData?.potencia ?? "--"} W</div>
-						</div>
-					</div>
-
-					<div className="machine-card-metric machine-card-metric-temperature d-flex align-items-center gap-2 flex-fill">
-						<FaTemperatureThreeQuarters className="text-warning" />
-						<div>
-							<small className="machine-card-metric-label text-secondary d-block">Temp</small>
-							<div className="fw-semibold">{lastData?.temperatura ?? "--"} °C</div>
-						</div>
+					<div className="d-flex justify-content-between align-items-start gap-2">
+						<h6 className="mb-0 fw-semibold">{machine.codigo}</h6>
+						<span className="machine-card-type-icons text-secondary d-inline-flex gap-1" aria-hidden="true">
+							<FaGear size={12} />
+							<FaIndustry size={12} />
+						</span>
 					</div>
 				</div>
 
-				<hr className="my-1" />
+				<hr className="machine-card-rule" />
 
-				<div className="machine-card-status d-flex align-items-center gap-2">
-					<div className="d-flex align-items-center gap-1">
-						<StatusIcon className={statusColorClass} size={14} />
-						<Badge color={statusInfo.chipColor} pill>
-							{statusInfo.category === "operando" ? "Operando" : machine.status}
-						</Badge>
+				<div className="machine-card-body-metrics">
+					<div className="machine-card-metrics-left">
+						<div className="machine-card-metric">
+							<span className="machine-card-metric-gutter" aria-hidden />
+							<small className="machine-card-metric-label text-secondary">RPM</small>
+							<FaGaugeHigh className="machine-card-metric-icon text-primary" />
+							<div className="machine-card-metric-value fw-semibold">{formatRpm(lastData?.rpm)}</div>
+						</div>
+						<div className="machine-card-metric">
+							<span className="machine-card-metric-gutter" aria-hidden />
+							<small className="machine-card-metric-label text-secondary">Temp</small>
+							<FaTemperatureThreeQuarters className="machine-card-metric-icon text-warning" />
+							<div className="machine-card-metric-value fw-semibold">
+								{lastData?.temperatura !== undefined && !Number.isNaN(lastData.temperatura)
+									? `${lastData.temperatura} °C`
+									: "--"}
+							</div>
+						</div>
 					</div>
 
-					{machine.alertas?.length ? (
-						<div className="d-flex align-items-center gap-1 flex-wrap">
-							{machine.alertas.slice(0, 2).map((alerta) => (
-								<Badge key={`${machine.id}-${alerta}`} color="warning" className="text-dark" pill>
-									{alerta}
-								</Badge>
-							))}
+					<div className="machine-card-metrics-right">
+						<div className="machine-card-metric">
+							<span className="machine-card-metric-gutter" aria-hidden />
+							<small className="machine-card-metric-label text-secondary">Potência</small>
+							<FaBolt className="machine-card-metric-icon text-secondary" />
+							<div className="machine-card-metric-value fw-semibold">
+								{lastData?.potencia !== undefined && !Number.isNaN(lastData.potencia)
+									? `${new Intl.NumberFormat("pt-BR").format(lastData.potencia)} W`
+									: "--"}
+							</div>
 						</div>
-					) : null}
+					</div>
+				</div>
+
+				<hr className="machine-card-rule" />
+
+				<div className={`machine-card-footer-bar ${footerToneClass}`}>
+					<FooterIcon size={16} className="machine-card-footer-icon flex-shrink-0" />
+					<span className="machine-card-footer-text text-truncate">{footerLabel}</span>
 				</div>
 			</div>
 		</Card>
