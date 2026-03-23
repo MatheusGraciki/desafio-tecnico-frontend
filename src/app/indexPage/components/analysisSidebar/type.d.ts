@@ -1,9 +1,10 @@
 import type { Machine } from "@/services/machines/type";
 
+export type AnalysisSidebarTab = "analise" | "previsoes";
+
 export interface AnalysisSidebarProps {
-	analysisOpen: boolean;
-	onToggle: () => void;
 	criticalMachines: Machine[];
 	warningMachines: Machine[];
 	machines: Machine[];
+	onMachineSelect?: (machine: Machine) => void;
 }
