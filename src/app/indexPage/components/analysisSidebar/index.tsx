@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Card } from "@/components/common/card";
-import { AnaliseTab } from "./tabs/analiseTab";
-import { PrevisoesTab } from "./tabs/previsoesTab";
+import { Card } from "@/components/card";
+import { AnalysTab } from "./tabs/analysisTab/analysisTab";
+import { PrevTab } from "./tabs/prevTab/index";
 import { Tabs } from "./tabs/index";
 import type { AnalysisSidebarProps, AnalysisSidebarTab } from "./type";
 import "./styles.scss";
@@ -20,14 +20,14 @@ export function AnalysisSidebar({
 				<Tabs tab={tab} onTabChange={setTab} />
 
 				{tab === "analise" ? (
-					<AnaliseTab
+					<AnalysTab
 						criticalMachines={criticalMachines}
 						warningMachines={warningMachines}
 						machines={machines}
 						onMachineSelect={onMachineSelect}
 					/>
 				) : (
-					<PrevisoesTab machines={machines} />
+					<PrevTab machines={machines} />
 				)}
 			</Card>
 		</div>

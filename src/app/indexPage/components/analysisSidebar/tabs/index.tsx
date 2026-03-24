@@ -1,6 +1,7 @@
-import { FaBolt, FaClock } from "react-icons/fa6";
+import { FaChartBar } from "react-icons/fa6";
 import type { AnalysisSidebarTab } from "../type";
 import "./styles.scss";
+import { LuChartColumnBig } from "react-icons/lu";
 
 type AnalysisSidebarTabsProps = {
 	tab: AnalysisSidebarTab;
@@ -13,28 +14,24 @@ export function Tabs({ tab, onTabChange }: AnalysisSidebarTabsProps) {
 			<button
 				type="button"
 				role="tab"
-				aria-selected={tab === "analise"}
 				className={`sidebar-tabs-tab ${tab === "analise" ? "is-active" : ""}`}
 				onClick={() => onTabChange("analise")}
 			>
-				<FaBolt
+				<LuChartColumnBig
 					className={`sidebar-tabs-icon ${tab === "analise" ? "" : "text-secondary opacity-75"}`}
-					size={12}
-					aria-hidden
+					size={20}
 				/>
 				Análise
 			</button>
 			<button
 				type="button"
 				role="tab"
-				aria-selected={tab === "previsoes"}
 				className={`sidebar-tabs-tab ${tab === "previsoes" ? "is-active" : ""}`}
 				onClick={() => onTabChange("previsoes")}
 			>
-				<FaClock
+				<FaChartBar
 					className={`sidebar-tabs-icon ${tab === "previsoes" ? "" : "text-secondary opacity-75"}`}
-					size={12}
-					aria-hidden
+					size={18}
 				/>
 				Previsões
 			</button>

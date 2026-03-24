@@ -1,23 +1,20 @@
-import { FaBolt, FaChevronRight, FaClock } from "react-icons/fa6";
+import { useState } from "react";
+import { FaBolt } from "react-icons/fa6";
+import { ModalDefault } from "@/components/common/modalDefault";
 import type { Machine } from "@/services/machines/type";
-
-const PREVISAO_TEMPLATES = [
-	"Previsão p/ desgaste ferramenta",
-	"Revisão de lubrificação",
-	"Inspeção de correias",
-	"Calibração de eixo",
-] as const;
+import { usePrevisoes } from "./hooks/usePrevisoes";
+import { PrevisoesList } from "./PrevisoesList";
 
 type PrevisoesTabProps = {
 	machines: Machine[];
 };
 
 export function PrevisoesTab({ machines }: PrevisoesTabProps) {
-	const previsoes = machines.slice(0, 8).map((machine, index) => ({
-		id: machine.id,
-		codigo: machine.codigo,
-		text: PREVISAO_TEMPLATES[index % PREVISAO_TEMPLATES.length],
-	}));
+	const [showModal, setShowModal] = useState(false);
+	const MAX_PREVIEW = 8;
+	const previsoes = usePrevisoes(machines);
+	const previewPrevisoes = previsoes.slice(0, MAX_PREVIEW);
+	const hasMore = previsoes.length > MAX_PREVIEW;
 
 	return (
 		<div className="analysis-sidebar-content">
@@ -27,18 +24,34 @@ export function PrevisoesTab({ machines }: PrevisoesTabProps) {
 					Previsões
 				</h3>
 				{previsoes.length ? (
-					<div className="analysis-sidebar-row-group">
-						{previsoes.map((item) => (
-							<button key={item.id} type="button" className="analysis-sidebar-row">
-								<FaClock className="text-secondary flex-shrink-0 opacity-50" size={12} aria-hidden="true" />
-								<div className="analysis-sidebar-row-text text-start">
-									<span className="d-block text-truncate">{item.text}</span>
-									<small className="text-secondary text-truncate d-block">{item.codigo}</small>
-								</div>
-								<FaChevronRight className="text-secondary flex-shrink-0" size={12} />
+					<>
+						<PrevisoesList items={previewPrevisoes} />
+						{hasMore && (
+							<button
+								type="button"
+								className="btn btn-primary btn-sm w-100 mt-2"
+								onClick={() => setShowModal(true)}
+							>
+								Ver todos ({previsoes.length})
 							</button>
-						))}
-					</div>
+						)}
+						<ModalDefault
+							isOpen={showModal}
+							onClose={() => setShowModal(false)}
+							title={
+								<>
+									Previsões
+									<span className="text-secondary fw-normal ms-1">
+										({previsoes.length})
+									</span>
+								</>
+							}
+							className="analysis-sidebar-list-modal-dialog"
+							contentClassName="analysis-sidebar-list-modal-content"
+						>
+							<PrevisoesList items={previsoes} />
+						</ModalDefault>
+					</>
 				) : (
 					<small className="text-secondary">Sem previsões.</small>
 				)}
