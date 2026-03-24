@@ -36,7 +36,12 @@ export function useIndexMachines() {
 			try {
 				const data = await fetchMachines();
 				if (!active) return;
-				setMachines(data ?? []);
+				if (!Array.isArray(data)) {
+					setError("Resposta inválida da API (esperado lista de máquinas).");
+					setMachines([]);
+					return;
+				}
+				setMachines(data);
 			} catch {
 				if (!active) return;
 				setError("Não foi possível carregar as máquinas no momento.");
@@ -104,18 +109,12 @@ export function useIndexMachines() {
 	);
 
 	const criticalMachines = useMemo(
-		() =>
-			filteredMachines
-				.filter((machine) => getStatusCategory(machine?.status) === "alerta")
-				.slice(0, 4),
+		() => filteredMachines.filter((machine) => getStatusCategory(machine?.status) === "alerta"),
 		[filteredMachines],
 	);
 
 	const warningMachines = useMemo(
-		() =>
-			filteredMachines
-				.filter((machine) => getStatusCategory(machine?.status) === "atencao")
-				.slice(0, 4),
+		() => filteredMachines.filter((machine) => getStatusCategory(machine?.status) === "atencao"),
 		[filteredMachines],
 	);
 
