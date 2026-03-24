@@ -45,7 +45,11 @@ export function StatusDistribution({
 				))}
 			</div>
 
-			<div className="index-pagination-actions" role="group" aria-label="Navegação de páginas">
+			<div
+				className="index-pagination-actions"
+				role="group"
+				aria-label="Navegação de páginas"
+			>
 				<button
 					type="button"
 					className="index-pagination-action"

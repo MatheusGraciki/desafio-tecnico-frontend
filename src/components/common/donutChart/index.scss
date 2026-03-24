@@ -1,137 +1,121 @@
-.donut-chart-title-text {
-	position: absolute;
-	top: 5%;
-	left: 0%;
-	max-width: 100%;
-	padding-right: 0.25rem;
-	box-sizing: border-box;
-	font-size: 1.08rem;
-	font-weight: 600;
-	color: var(--foreground, #222);
-	line-height: 1.2;
-	margin-bottom: 0.15em;
-	text-align: left;
-	letter-spacing: -0.01em;
-	word-break: break-word;
-}
-
 .donut-chart {
 	display: grid;
-	grid-template-columns: minmax(110px, clamp(120px, 36%, 210px)) minmax(0, 1fr);
+	grid-template-columns: minmax(110px, clamp(100px, 50%, 300px)) minmax(0, 1fr);
 	align-items: center;
 	column-gap: 0.4rem;
 	width: 100%;
 	min-width: 0;
 	container-type: inline-size;
 	position: relative;
-}
-
-.donut-chart-figure {
-	overflow: visible;
-	width: 100%;
-	max-width: 220px;
-	justify-self: center;
-}
-
-.donut-chart-legend-wrap {
-	position: relative;
-	justify-self: start;
-	width: max-content;
-	max-width: 100%;
-	min-width: 0;
-	align-self: center;
-}
-
-.donut-chart-legend {
-	display: grid;
-	grid-template-columns: minmax(0, max-content) auto;
-	column-gap: 0.45rem;
-	row-gap: 0.5rem;
-	align-content: start;
-	justify-content: start;
-	width: max-content;
-	max-width: 100%;
-	min-width: 0;
-	overflow: visible;
-}
-
-/* Tooltip renderizado em portal (body); posição via JS — legenda permanece visível */
-.donut-chart-tooltip-portal {
-	min-width: 0;
-}
-
-.donut-chart-legend-item {
-	display: contents;
-}
-
-.donut-chart-legend-label {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.4rem;
-	grid-column: 1;
-	min-width: 0;
-	max-width: 100%;
-	color: var(--foreground);
-	font-weight: 500;
-}
-
-.donut-chart-legend-icon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 0.9rem;
-	line-height: 1;
-	flex: 0 0 auto;
-}
-
-.donut-chart-legend-name {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.donut-chart-legend-value {
-	grid-column: 2;
-	justify-self: start;
-	min-width: 2ch;
-	color: var(--foreground);
-	font-weight: 600;
-	text-align: right;
-	font-variant-numeric: tabular-nums;
-}
-
-.donut-chart-legend > small {
-	grid-column: 1 / -1;
-}
-
-@container (max-width: 720px) {
-	.donut-chart {
-		column-gap: 0.35rem;
-	}
 
 	.donut-chart-figure {
-		max-width: 180px;
+		overflow: visible;
+		width: 100%;
+		max-width: 220px;
+		justify-self: center;
+
+		.donut-chart-title-text {
+			position: absolute;
+			top: -5%;
+			left: 4%;
+			max-width: 100%;
+			padding-right: 0.25rem;
+			box-sizing: border-box;
+			font-size: 1.08rem;
+			font-weight: 600;
+			color: var(--foreground, #222);
+			line-height: 1.2;
+			margin-bottom: 0.15em;
+			text-align: left;
+			letter-spacing: -0.01em;
+			word-break: break-word;
+		}
 	}
 
-	.donut-chart-legend {
-		column-gap: 0.45rem;
-	}
-
-	.donut-chart-legend-name {
-		max-width: min(11rem, 100%);
-	}
-}
-
-@container (max-width: 520px) {
-	.donut-chart {
-		grid-template-columns: 1fr;
-		row-gap: 0.75rem;
-		align-items: stretch;
-	}
-
-	.donut-chart-figure {
-		max-width: none;
-		width: min(100%, 240px);
+	.donut-chart-legend-wrap {
+		position: relative;
+		justify-self: start;
+		width: max-content;
+		max-width: 100%;
+		min-width: 0;
 		align-self: center;
+
+		.donut-chart-tooltip-layer {
+			position: absolute;
+			top: -15%;
+			left: -25%;
+			bottom: 100%;
+			z-index: 4;
+			margin-bottom: 0.35rem;
+			width: max-content;
+			max-width: min(20rem, calc(100cqi - 0.5rem));
+			pointer-events: none;
+			box-sizing: border-box;
+
+			> * {
+				min-width: min(16.5rem, 100%);
+				max-width: min(20rem, calc(100vw - 1.25rem));
+			}
+		}
+
+		.donut-chart-legend {
+			display: grid;
+			grid-template-columns: minmax(0, max-content) auto;
+			column-gap: 0.45rem;
+			row-gap: 0.5rem;
+			align-content: start;
+			justify-content: start;
+			width: max-content;
+			max-width: 100%;
+			min-width: 0;
+			overflow: visible;
+
+			> small {
+				grid-column: 1 / -1;
+			}
+
+			.donut-chart-legend-item {
+				display: contents;
+			}
+
+			.donut-chart-legend-label {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.4rem;
+				grid-column: 1;
+				min-width: 0;
+				max-width: 100%;
+				color: var(--foreground);
+				font-weight: 500;
+
+				.donut-chart-legend-icon {
+					display: inline-flex;
+					align-items: center;
+					justify-content: center;
+					font-size: 0.9rem;
+					line-height: 1;
+					flex: 0 0 auto;
+				}
+
+				.donut-chart-legend-name {
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+				}
+			}
+
+			.donut-chart-legend-value {
+				grid-column: 2;
+				justify-self: start;
+				min-width: 2ch;
+				color: var(--foreground);
+				font-weight: 600;
+				text-align: right;
+				font-variant-numeric: tabular-nums;
+			}
+		}
 	}
 }
+
+
+

@@ -1,10 +1,18 @@
 import type { MachineStatusCategory } from "@/services/machines/type";
 import type { MachineStatusInfo } from "./type";
-
+// Refatorar
 const STATUS_KEYWORDS = {
 	operando: ["operando"],
 	parada: ["parada", "offline"],
-	alerta: ["alerta", "alta", "critico", "crítico", "gasta", "instabilidade", "vibração"],
+	alerta: [
+		"alerta",
+		"alta",
+		"critico",
+		"crítico",
+		"gasta",
+		"instabilidade",
+		"vibração",
+	],
 	atencao: ["atenção", "atencao", "manutenção", "manutencao", "baixa"],
 } as const;
 
@@ -13,14 +21,18 @@ function normalizeStatus(status?: string | null) {
 	return status.toLowerCase().trim();
 }
 
-export function getStatusCategory(status?: string | null): MachineStatusCategory {
+export function getStatusCategory(
+	status?: string | null,
+): MachineStatusCategory {
 	const normalized = normalizeStatus(status);
 
 	if (!normalized) {
 		return "parada";
 	}
 
-	if (STATUS_KEYWORDS.operando.some((keyword) => normalized.includes(keyword))) {
+	if (
+		STATUS_KEYWORDS.operando.some((keyword) => normalized.includes(keyword))
+	) {
 		return "operando";
 	}
 

@@ -182,7 +182,7 @@ export const MachineChart = memo(function MachineChart({ machines }: MachineChar
 						totalCount,
 					)
 				}
-				height={220}
+				height={180}
 			/>
 		</div>
 	);
