@@ -5,6 +5,7 @@ import {
 	getMachineImageUrl,
 	getStatusInfo,
 } from "@/app/indexPage/utils/machine";
+import { computeKpisFromDados } from "../utils/kpiFromDados";
 
 export type MainTab = "resumo" | "historico" | "estatisticas" | "alertas";
 export type RangeKey = "24h" | "7d" | "30d";
@@ -28,32 +29,15 @@ function formatChartLabel(iso: string) {
 	return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
-function formatHm(totalMinutes: number) {
-	const h = Math.floor(totalMinutes / 60);
-	const m = Math.round(totalMinutes % 60);
-	return `${h}h ${String(m).padStart(2, "0")}m`;
-}
-
-function estimateKpis(dados: MachineData[], stepMin = 5) {
-	const alertPoints = dados.filter((d) => d.temperatura >= 80).length;
-	const attentionPoints = dados.filter(
-		(d) => d.temperatura >= 65 && d.temperatura < 80,
-	).length;
-	const totalMin = dados.length * stepMin;
-	return {
-		alerta: formatHm(alertPoints * stepMin),
-		atencao: formatHm(attentionPoints * stepMin),
-		totalOper: formatHm(totalMin),
-	};
-}
-
 function hasTemperaturaAltaAlert(machine: Machine): boolean {
 	return (
 		machine.alertas?.some((a) => {
 			const s = a.toLowerCase();
 			const falaDeTemp =
 				s.includes("temperatura") ||
-				s.includes("temp.")
+				s.includes("temp.") ||
+				/\btemp\b/.test(s) ||
+				s.includes("°c");
 			const indicaAlta =
 				s.includes("alta") ||
 				s.includes("alto") ||
@@ -125,20 +109,17 @@ export function useMachineDetail(machine: Machine | null) {
 		[chartSlice],
 	);
 
-	const kpis = useMemo(() => estimateKpis(dados), [dados]);
-
-	const efficiency = useMemo(() => {
-		if (!statusInfo) return "—";
-		if (statusInfo.category === "operando") return "88%";
-		if (statusInfo.category === "atencao") return "72%";
-		if (statusInfo.category === "alerta") return "61%";
-		return "—";
-	}, [statusInfo]);
-
-	const efficiencyClass =
-		statusInfo?.category === "operando"
-			? "text-success fw-semibold"
-			: "text-body fw-semibold";
+	const kpiBlock = useMemo(() => computeKpisFromDados(dados), [dados]);
+	const kpis = useMemo(
+		() => ({
+			alerta: kpiBlock.alerta,
+			atencao: kpiBlock.atencao,
+			totalOper: kpiBlock.totalOper,
+		}),
+		[kpiBlock],
+	);
+	const efficiency = kpiBlock.efficiency;
+	const efficiencyClass = kpiBlock.efficiencyClass;
 
 	const statusDotClass =
 		statusInfo?.category === "operando"

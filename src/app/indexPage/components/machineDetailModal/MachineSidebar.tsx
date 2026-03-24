@@ -6,8 +6,6 @@ import {
 	formatTemperaturaCompact,
 } from "@/app/indexPage/utils/format";
 
-const TEMP_ALERT_THRESHOLD = 75;
-
 interface MachineSidebarProps {
 	machine: Machine;
 	lastData?: MachineData;
@@ -16,7 +14,13 @@ interface MachineSidebarProps {
 	temperaturaSpark: number[];
 }
 
-function TemperatureSpark({ values }: { values: number[] }) {
+function TemperatureSpark({
+	values,
+	temperaturaAltaPorAlerta,
+}: {
+	values: number[];
+	temperaturaAltaPorAlerta: boolean;
+}) {
 	if (!values.length) {
 		return <div className="machine-detail-modal-spark-empty" aria-hidden />;
 	}
@@ -27,8 +31,8 @@ function TemperatureSpark({ values }: { values: number[] }) {
 			role="img"
 			aria-label="Variação recente de temperatura"
 		>
-			{values.map((v, i) => {
-				const hot = v >= TEMP_ALERT_THRESHOLD;
+			{values.map((_, i) => {
+				const hot = temperaturaAltaPorAlerta;
 				return (
 					<span
 						key={i}
@@ -94,7 +98,10 @@ export function MachineSidebar({
 						>
 							{tempDisplay}
 						</div>
-						<TemperatureSpark values={temperaturaSpark} />
+						<TemperatureSpark
+							values={temperaturaSpark}
+							temperaturaAltaPorAlerta={showTempBadge}
+						/>
 					</div>
 				</div>
 				{showTempBadge ? (
