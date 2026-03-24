@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Machine, MachineData } from "@/services/machines/type";
 import {
 	getLastMachineData,
@@ -15,10 +15,12 @@ const RANGE_WINDOW: Record<RangeKey, number> = {
 	"30d": 96,
 };
 
-function formatRpm(value: number | undefined) {
-	if (value === undefined || Number.isNaN(value)) return "--";
-	return `${new Intl.NumberFormat("pt-BR").format(value)} rpm`;
-}
+/** Mínimo de pontos na série para permitir o período (7d/30d sem dados suficientes → não exibe gráfico). */
+const MIN_SAMPLES_FOR_RANGE: Record<RangeKey, number> = {
+	"24h": 1,
+	"7d": 48,
+	"30d": 96,
+};
 
 function formatChartLabel(iso: string) {
 	const d = new Date(iso);
@@ -45,18 +47,31 @@ function estimateKpis(dados: MachineData[], stepMin = 5) {
 	};
 }
 
-function hasHighTemp(machine: Machine, last?: MachineData) {
-	const fromAlert =
-		machine.alertas?.some((a) => a.toLowerCase().includes("temp")) ?? false;
-	const fromValue =
-		last !== undefined &&
-		!Number.isNaN(last.temperatura) &&
-		last.temperatura >= 75;
-	return fromAlert || fromValue;
+function hasTemperaturaAltaAlert(machine: Machine): boolean {
+	return (
+		machine.alertas?.some((a) => {
+			const s = a.toLowerCase();
+			const falaDeTemp =
+				s.includes("temperatura") ||
+				s.includes("temp.")
+			const indicaAlta =
+				s.includes("alta") ||
+				s.includes("alto") ||
+				s.includes("elev") ||
+				s.includes("superaquec") ||
+				s.includes("crít") ||
+				s.includes("crit");
+			return falaDeTemp && indicaAlta;
+		}) ?? false
+	);
+}
+
+function temperaturaSparkSeries(dados: MachineData[], maxPoints = 24) {
+	if (!dados.length) return [];
+	return dados.slice(-maxPoints).map((d) => d.temperatura);
 }
 
 export function useMachineDetail(machine: Machine | null) {
-	const tempGradientId = useId().replace(/:/g, "");
 	const [mainTab, setMainTab] = useState<MainTab>("resumo");
 	const [range, setRange] = useState<RangeKey>("24h");
 	const [windowStart, setWindowStart] = useState(0);
@@ -64,8 +79,10 @@ export function useMachineDetail(machine: Machine | null) {
 	const lastData = machine ? getLastMachineData(machine) : undefined;
 	const statusInfo = machine ? getStatusInfo(machine.status) : null;
 	const imageUrl = machine ? getMachineImageUrl(machine.codigo) : "";
-	const showTempBadge = machine ? hasHighTemp(machine, lastData) : false;
+	const showTempBadge = machine ? hasTemperaturaAltaAlert(machine) : false;
 	const dados = machine?.dados?.length ? machine.dados : [];
+
+	const temperaturaSpark = useMemo(() => temperaturaSparkSeries(dados), [dados]);
 
 	useEffect(() => {
 		setMainTab("resumo");
@@ -78,21 +95,32 @@ export function useMachineDetail(machine: Machine | null) {
 	const windowSize = RANGE_WINDOW[range];
 	const maxStart = Math.max(0, dados.length - windowSize);
 
+	const hasEnoughSamplesForRange = dados.length >= MIN_SAMPLES_FOR_RANGE[range];
+
 	useEffect(() => {
 		setWindowStart((s) => Math.min(s, maxStart));
 	}, [maxStart]);
 
+	useEffect(() => {
+		if (range === "7d" && dados.length < MIN_SAMPLES_FOR_RANGE["7d"]) {
+			setRange("24h");
+		}
+		if (range === "30d" && dados.length < MIN_SAMPLES_FOR_RANGE["30d"]) {
+			setRange("24h");
+		}
+	}, [dados.length, range]);
+
 	const chartSlice = useMemo(() => {
-		if (!dados.length) return [];
+		if (!dados.length || !hasEnoughSamplesForRange) return [];
 		const start = Math.min(windowStart, maxStart);
 		return dados.slice(start, start + windowSize);
-	}, [dados, maxStart, windowSize, windowStart]);
+	}, [dados, hasEnoughSamplesForRange, maxStart, windowSize, windowStart]);
 
 	const chartData = useMemo(
 		() =>
 			chartSlice.map((d) => ({
 				label: formatChartLabel(d.timestamp),
-				temperatura: d.temperatura,
+				rpm: d.rpm,
 			})),
 		[chartSlice],
 	);
@@ -121,8 +149,12 @@ export function useMachineDetail(machine: Machine | null) {
 					? "text-warning"
 					: "text-secondary";
 
+	const rangeDisabled = (key: RangeKey) => {
+		if (key === "24h") return false;
+		return dados.length < MIN_SAMPLES_FOR_RANGE[key];
+	};
+
 	return {
-		tempGradientId,
 		mainTab,
 		setMainTab,
 		range,
@@ -137,6 +169,9 @@ export function useMachineDetail(machine: Machine | null) {
 		showTempBadge,
 		dados,
 		chartData,
+		temperaturaSpark,
+		hasEnoughSamplesForRange,
+		rangeDisabled,
 		kpis,
 		efficiency,
 		efficiencyClass,

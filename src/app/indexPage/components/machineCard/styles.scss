@@ -26,10 +26,41 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.25rem;
+	min-width: 0;
+}
+
+.machine-card-title-row {
+	min-width: 0;
+	width: 100%;
+}
+
+.machine-card-title {
+	min-width: 0;
+	flex: 1 1 auto;
+	max-width: 100%;
+	font-size: clamp(0.78rem, 0.35rem + 1.1vw, 1rem);
+	line-height: 1.28;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+	hyphens: auto;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	line-clamp: 2;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
 }
 
 .machine-card-type-icons {
 	opacity: 0.65;
+}
+
+.machine-card-edit-btn {
+	line-height: 1;
+	opacity: 0.85;
+
+	&:hover {
+		opacity: 1;
+	}
 }
 
 .machine-card-rule {

@@ -12,7 +12,7 @@ export function StatusCards({ items }: StatusCardsProps) {
 				return (
 					<div key={item.key} className="status-summary-card-item">
 						<Card
-							cardStyle={{ width: "100%" }}
+							styles={{ width: "100%" }}
 							titleAlign="center"
 							contentStyle={{
 								padding: "0.75rem 1rem",

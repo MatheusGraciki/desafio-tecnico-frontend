@@ -5,9 +5,10 @@ interface AppCardProps extends PropsWithChildren {
 	title?: ReactNode;
 	subtitle?: ReactNode;
 	action?: ReactNode;
-	cardStyle?: CSSProperties;
+	styles?: CSSProperties;
 	contentStyle?: CSSProperties;
 	titleAlign?: "start" | "center";
+	onClick?: () => void;
 }
 
 export function Card({
@@ -15,9 +16,10 @@ export function Card({
 	subtitle,
 	action,
 	children,
-	cardStyle,
+	styles,
 	contentStyle,
 	titleAlign = "start",
+	onClick,
 }: AppCardProps) {
 	const titleContainerClassName = titleAlign === "center" ? "w-100" : undefined;
 	const titleClassName =
@@ -37,8 +39,9 @@ export function Card({
 				borderRadius: "0.5rem",
 				height: "100%",
 				width: "100%",
-				...cardStyle,
+				...styles,
 			}}
+			onClick={onClick}
 		>
 			<CardBody style={contentStyle}>
 				{title || subtitle || action ? (

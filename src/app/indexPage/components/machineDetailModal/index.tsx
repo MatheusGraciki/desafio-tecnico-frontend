@@ -5,6 +5,7 @@ import { MachineHeader } from "./MachineHeader";
 import { MachineSidebar } from "./MachineSidebar";
 import { MachineTabs } from "./MachineTabs";
 import { MachineChart } from "./MachineChart";
+import { formatPotenciaW, formatRpm, formatTemperatura } from "@/app/indexPage/utils/format";
 import "./styles.scss";
 
 export type MachineDetailModalProps = {
@@ -43,6 +44,7 @@ export function MachineDetailModal({
 								lastData={detail.lastData}
 								imageUrl={detail.imageUrl}
 								showTempBadge={detail.showTempBadge}
+								temperaturaSpark={detail.temperaturaSpark}
 							/>
 							<div className="machine-detail-modal-right">
 								<MachineTabs
@@ -78,9 +80,9 @@ export function MachineDetailModal({
 												</span>
 												<span>{detail.kpis.totalOper}</span>
 											</div>
-											<div className="machine-detail-modal-kpi-line">
+											<div className="machine-detail-modal-kpi-line machine-detail-modal-kpi-line-efficiency">
 												<span className="text-secondary">Eficiência:</span>
-												<span className={detail.efficiencyClass}>
+												<span className={`machine-detail-modal-kpi-efficiency ${detail.efficiencyClass}`}>
 													{detail.efficiency}
 												</span>
 											</div>
@@ -91,6 +93,12 @@ export function MachineDetailModal({
 													key={key}
 													type="button"
 													className={`machine-detail-modal-range-tab ${detail.range === key ? "machine-detail-modal-range-tab-active" : ""}`}
+													disabled={detail.rangeDisabled(key)}
+													title={
+														detail.rangeDisabled(key)
+															? "Dados insuficientes para este período"
+															: undefined
+													}
 													onClick={() => detail.setRange(key)}
 												>
 													{key === "24h"
@@ -104,7 +112,10 @@ export function MachineDetailModal({
 												type="button"
 												className="machine-detail-modal-range-nav"
 												aria-label="Período anterior"
-												disabled={detail.windowStart <= 0}
+												disabled={
+													!detail.hasEnoughSamplesForRange ||
+													detail.windowStart <= 0
+												}
 												onClick={() =>
 													detail.setWindowStart((s) => Math.max(0, s - 1))
 												}
@@ -116,7 +127,10 @@ export function MachineDetailModal({
 												type="button"
 												className="machine-detail-modal-range-nav"
 												aria-label="Próximo período"
-												disabled={detail.windowStart >= detail.maxStart}
+												disabled={
+													!detail.hasEnoughSamplesForRange ||
+													detail.windowStart >= detail.maxStart
+												}
 												onClick={() =>
 													detail.setWindowStart((s) =>
 														Math.min(detail.maxStart, s + 1),
@@ -127,30 +141,21 @@ export function MachineDetailModal({
 												&#62;
 											</button>
 										</div>
-										<div className="machine-detail-modal-reading">
-											<span className="machine-detail-modal-reading-dot machine-detail-modal-reading-dot-green" />
-											RPM: {detail.lastData ? detail.lastData.rpm : "--"}
+										<div className="machine-detail-modal-readings">
+											<span className="machine-detail-modal-reading">
+												<span className="machine-detail-modal-reading-dot machine-detail-modal-reading-dot-green" />
+												RPM: {formatRpm(detail.lastData?.rpm)}
+											</span>
+											<span className="machine-detail-modal-reading">
+												<span className="machine-detail-modal-reading-dot machine-detail-modal-reading-dot-yellow" />
+												Potência: {formatPotenciaW(detail.lastData?.potencia)}
+											</span>
+											<span className="machine-detail-modal-reading">
+												<span className="machine-detail-modal-reading-dot machine-detail-modal-reading-dot-red" />
+												Temperatura: {formatTemperatura(detail.lastData?.temperatura)}
+											</span>
 										</div>
-										<div className="machine-detail-modal-reading">
-											<span className="machine-detail-modal-reading-dot machine-detail-modal-reading-dot-yellow" />
-											{"Potência: "}
-											{detail.lastData?.potencia !== undefined &&
-											!Number.isNaN(detail.lastData.potencia)
-												? `${new Intl.NumberFormat("pt-BR").format(detail.lastData.potencia)} W`
-												: "--"}
-										</div>
-										<div className="machine-detail-modal-reading">
-											<span className="machine-detail-modal-reading-dot machine-detail-modal-reading-dot-red" />
-											{"Temperatura: "}
-											{detail.lastData?.temperatura !== undefined &&
-											!Number.isNaN(detail.lastData.temperatura)
-												? `${detail.lastData.temperatura} °C`
-												: "--"}
-										</div>
-										<MachineChart
-											chartData={detail.chartData}
-											tempGradientId={detail.tempGradientId}
-										/>
+										<MachineChart chartData={detail.chartData} />
 									</>
 								) : (
 									<p className="machine-detail-modal-placeholder mb-0">
@@ -159,7 +164,7 @@ export function MachineDetailModal({
 											? "Histórico"
 											: detail.mainTab === "estatisticas"
 												? "Estatísticas"
-												: "Alertas & Sensors"}
+												: "Alertas & Sensores"}
 										&quot; em breve.
 									</p>
 								)}

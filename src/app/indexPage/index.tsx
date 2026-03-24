@@ -4,6 +4,7 @@ import { Alert, Col, Row } from "reactstrap";
 import { LuClock12, LuClock4 } from "react-icons/lu";
 
 import { AnalysisSidebar } from "./components/analysisSidebar";
+import { MachineEditModal } from "./components/machineEditModal";
 import { MachineDetailModal } from "./components/machineDetailModal";
 import { IndexFilters } from "./components/indexFilters";
 import { StatusDistribution } from "./components/statusDistribution";
@@ -74,6 +75,7 @@ function DashboardSkeleton() {
 
 export default function IndexPage() {
 	const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
+	const [machineToEdit, setMachineToEdit] = useState<Machine | null>(null);
 
 	const {
 		loading,
@@ -91,6 +93,7 @@ export default function IndexPage() {
 		alertsEnteredToday,
 		criticalMachines,
 		warningMachines,
+		mergeMachine,
 	} = useIndexMachines();
 
 	const summaryItems = useMemo<SummaryItem[]>(() => {
@@ -189,6 +192,7 @@ export default function IndexPage() {
 											key={machine.id}
 											machine={machine}
 											onSelect={setSelectedMachine}
+											onEditRequest={setMachineToEdit}
 										/>
 									))}
 								</div>
@@ -206,6 +210,18 @@ export default function IndexPage() {
 					</Row>
 				</>
 			)}
+
+			<MachineEditModal
+				isOpen={Boolean(machineToEdit)}
+				machine={machineToEdit}
+				onClose={() => setMachineToEdit(null)}
+				onSaved={(updated) => {
+					mergeMachine(updated);
+					setSelectedMachine((prev) =>
+						prev && String(prev.id) === String(updated.id) ? { ...prev, ...updated } : prev,
+					);
+				}}
+			/>
 
 			<MachineDetailModal
 				machine={selectedMachine}

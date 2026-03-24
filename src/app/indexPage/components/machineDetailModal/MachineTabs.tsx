@@ -23,7 +23,7 @@ export function MachineTabs({ mainTab, setMainTab }: MachineTabsProps) {
 							? "Histórico"
 							: key === "estatisticas"
 								? "Estatísticas"
-								: "Alertas & Sensors"}
+								: "Alertas & Sensores"}
 				</button>
 			))}
 		</div>

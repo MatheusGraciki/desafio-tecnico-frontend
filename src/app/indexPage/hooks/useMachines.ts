@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { fetchMachines } from "@/services/machines";
 import type { Machine } from "@/services/machines/type";
@@ -118,6 +118,14 @@ export function useIndexMachines() {
 		[filteredMachines],
 	);
 
+	const mergeMachine = useCallback((updated: Machine) => {
+		setMachines((prev) =>
+			prev.map((machine) =>
+				String(machine.id) === String(updated.id) ? { ...machine, ...updated } : machine,
+			),
+		);
+	}, []);
+
 	return {
 		loading,
 		error,
@@ -134,5 +142,6 @@ export function useIndexMachines() {
 		alertsEnteredToday,
 		criticalMachines,
 		warningMachines,
+		mergeMachine,
 	};
 }
