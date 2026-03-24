@@ -1,9 +1,10 @@
-import { useMemo } from "react";
-import { FaBell, FaCircleExclamation, FaRegCircleCheck } from "react-icons/fa6";
+import { useMemo, useState } from "react";
+import { FaCircleExclamation, FaRegCircleCheck } from "react-icons/fa6";
 import { Alert, Col, Row } from "reactstrap";
 import { LuClock12, LuClock4 } from "react-icons/lu";
 
 import { AnalysisSidebar } from "./components/analysisSidebar";
+import { MachineDetailModal } from "./components/machineDetailModal";
 import { IndexFilters } from "./components/indexFilters";
 import { StatusDistribution } from "./components/statusDistribution";
 import { MachineCard } from "./components/machineCard";
@@ -11,13 +12,16 @@ import { StatusCards } from "./components/statusCards";
 import { useIndexMachines } from "./hooks/useMachines";
 import "./styles.scss";
 
-import type { MachineStatusCategory } from "@/services/machines/type";
+import type { Machine, MachineStatusCategory } from "@/services/machines/type";
 import type { SummaryItem } from "./type";
 import { MdOutlineCrisisAlert } from "react-icons/md";
 
-const SUMMARY_META: Record<
+const STATUS_CONFIG: Record<
 	MachineStatusCategory,
-	Pick<SummaryItem, "label" | "textColor" | "buttonColor" | "smallIcon" | "largeIcon">
+	Pick<
+		SummaryItem,
+		"label" | "textColor" | "buttonColor" | "smallIcon" | "largeIcon"
+	>
 > = {
 	operando: {
 		label: "Em Operação",
@@ -54,7 +58,10 @@ function DashboardSkeleton() {
 		<div className="index-page-skeleton">
 			<div className="index-page-skeleton-top">
 				{Array.from({ length: 4 }).map((_, index) => (
-					<div key={index} className="bg-body-secondary rounded index-page-skeleton-card" />
+					<div
+						key={index}
+						className="bg-body-secondary rounded index-page-skeleton-card"
+					/>
 				))}
 			</div>
 			<div className="index-page-skeleton-bottom">
@@ -66,6 +73,8 @@ function DashboardSkeleton() {
 }
 
 export default function IndexPage() {
+	const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
+
 	const {
 		loading,
 		error,
@@ -87,25 +96,49 @@ export default function IndexPage() {
 	const summaryItems = useMemo<SummaryItem[]>(() => {
 		const total = filteredMachines.length || 1;
 
-		return (Object.keys(SUMMARY_META) as MachineStatusCategory[]).map((key) => ({
-			key,
-			label: SUMMARY_META[key].label,
-			count: statusCounts[key],
-			percentage: key === "operando" ? Math.round((statusCounts[key] / total) * 100) : undefined,
-			countDetail: key === "alerta" ? `(+${alertsEnteredToday} hoje)` : undefined,
-			textColor: SUMMARY_META[key].textColor,
-			buttonColor: SUMMARY_META[key].buttonColor,
-			smallIcon: SUMMARY_META[key].smallIcon,
-			largeIcon: SUMMARY_META[key].largeIcon,
-		}));
-	}, [alertsEnteredToday, filteredMachines, statusCounts]);
+		return (Object.keys(STATUS_CONFIG) as MachineStatusCategory[]).map(
+			(status) => {
+				const config = STATUS_CONFIG[status];
+				const count = statusCounts[status];
+
+				const isOperando = status === "operando";
+				const isAlerta = status === "alerta";
+
+				return {
+					key: status,
+					...config,
+					count,
+					percentage: isOperando
+						? Math.round((count / total) * 100)
+						: undefined,
+					countDetail: isAlerta ? `(+${alertsEnteredToday} hoje)` : undefined,
+				};
+			},
+		);
+	}, [alertsEnteredToday, filteredMachines.length, statusCounts]);
 
 	function handlePreviousPage() {
-		setMachinesPage((value) => (value === 0 ? totalMachinePages - 1 : value - 1));
+		setMachinesPage((currentPage) => {
+			const isFirstPage = currentPage === 0;
+
+			if (isFirstPage) {
+				return totalMachinePages - 1;
+			}
+
+			return currentPage - 1;
+		});
 	}
 
 	function handleNextPage() {
-		setMachinesPage((value) => (value === totalMachinePages - 1 ? 0 : value + 1));
+		setMachinesPage((currentPage) => {
+			const isLastPage = currentPage === totalMachinePages - 1;
+
+			if (isLastPage) {
+				return 0;
+			}
+
+			return currentPage + 1;
+		});
 	}
 
 	return (
@@ -135,7 +168,10 @@ export default function IndexPage() {
 							<div className="index-distribution">
 								<div className="index-distribution-header d-flex align-items-center">
 									<h2 className="h6 mb-0">Distribuição de Status</h2>
-									<div className="index-distribution-separator" aria-hidden="true" />
+									<div
+										className="index-distribution-separator"
+										aria-hidden="true"
+									/>
 
 									{filteredMachines.length > machinesPerPage ? (
 										<StatusDistribution
@@ -149,22 +185,33 @@ export default function IndexPage() {
 								</div>
 								<div className="index-machine-grid">
 									{paginatedMachines.map((machine) => (
-										<MachineCard key={machine.id} machine={machine} />
+										<MachineCard
+											key={machine.id}
+											machine={machine}
+											onSelect={setSelectedMachine}
+										/>
 									))}
 								</div>
 							</div>
 						</Col>
 
-						<Col xs={12} md={4} xxl={3} >
+						<Col xs={12} md={4} xxl={3}>
 							<AnalysisSidebar
 								criticalMachines={criticalMachines}
 								warningMachines={warningMachines}
 								machines={filteredMachines}
+								onMachineSelect={setSelectedMachine}
 							/>
 						</Col>
 					</Row>
 				</>
 			)}
+
+			<MachineDetailModal
+				machine={selectedMachine}
+				isOpen={Boolean(selectedMachine)}
+				onClose={() => setSelectedMachine(null)}
+			/>
 		</div>
 	);
 }

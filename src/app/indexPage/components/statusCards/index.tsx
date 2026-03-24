@@ -1,5 +1,5 @@
 import { Button } from "reactstrap";
-import { Card } from "@/components/common/card";
+import { Card } from "@/components/card";
 import type { StatusCardsProps } from "./type";
 import "./styles.scss";
 
