@@ -1,74 +1,42 @@
 import type { MachineStatusCategory } from "@/services/machines/type";
 import type { MachineStatusInfo } from "./type";
-// Refatorar
-const STATUS_KEYWORDS = {
-	operando: ["operando"],
-	parada: ["parada", "offline"],
-	alerta: [
-		"alerta",
-		"alta",
-		"critico",
-		"crítico",
-		"gasta",
-		"instabilidade",
-		"vibração",
-	],
-	atencao: ["atenção", "atencao", "manutenção", "manutencao", "baixa"],
-} as const;
 
-function normalizeStatus(status?: string | null) {
-	if (typeof status !== "string") return "";
-	return status.toLowerCase().trim();
-}
+const STATUS_KEYWORDS: Record<MachineStatusCategory, string[]> = {
+  operando: ["operando"],
+  parada:   ["parada", "offline"],
+  alerta:   ["alerta", "alta", "critico", "crítico", "gasta", "instabilidade", "vibração"],
+  atencao:  ["atenção", "atencao", "manutenção", "manutencao", "baixa"],
+};
 
-export function getStatusCategory(
-	status?: string | null,
-): MachineStatusCategory {
-	const normalized = normalizeStatus(status);
+const STATUS_CONFIG: Record<MachineStatusCategory, Omit<MachineStatusInfo, 'category'>> = {
+  operando: { label: "Operando", chipColor: "success" },
+  alerta:   { label: "Alerta",   chipColor: "danger" },
+  atencao:  { label: "Atenção",  chipColor: "warning" },
+  parada:   { label: "Parada",   chipColor: "secondary" },
+};
 
-	if (!normalized) {
-		return "parada";
-	}
+/**
+ * Identifica a categoria baseada em palavras-chave dentro da string de status
+ */
+export function getStatusCategory(status?: string | null): MachineStatusCategory {
+  if (!status) return "parada";
+  
+  const normalized = status.toLowerCase().trim();
 
-	if (
-		STATUS_KEYWORDS.operando.some((keyword) => normalized.includes(keyword))
-	) {
-		return "operando";
-	}
+  // Encontra a primeira categoria onde pelo menos uma keyword está presente no status
+  const foundCategory = (Object.keys(STATUS_KEYWORDS) as MachineStatusCategory[]).find((cat) =>
+    STATUS_KEYWORDS[cat].some((keyword) => normalized.includes(keyword))
+  );
 
-	if (STATUS_KEYWORDS.parada.some((keyword) => normalized.includes(keyword))) {
-		return "parada";
-	}
-
-	if (STATUS_KEYWORDS.alerta.some((keyword) => normalized.includes(keyword))) {
-		return "alerta";
-	}
-
-	if (STATUS_KEYWORDS.atencao.some((keyword) => normalized.includes(keyword))) {
-		return "atencao";
-	}
-
-	return "parada";
+  return foundCategory ?? "parada";
 }
 
 export function getStatusInfo(status?: string | null): MachineStatusInfo {
-	const category = getStatusCategory(status);
+  const category = getStatusCategory(status);
+  const config = STATUS_CONFIG[category];
 
-	if (category === "operando") {
-		return { category, label: "Operando", chipColor: "success" };
-	}
-
-	if (category === "alerta") {
-		return { category, label: "Alerta", chipColor: "danger" };
-	}
-
-	if (category === "atencao") {
-		return { category, label: "Atenção", chipColor: "warning" };
-	}
-
-	if (category === "parada") {
-		return { category, label: "Parada", chipColor: "secondary" };
-	}
-
-	return { category: "parada", label: "Parada", chipColor: "secondary" };
+  return {
+    category,
+    ...config,
+  };
 }
