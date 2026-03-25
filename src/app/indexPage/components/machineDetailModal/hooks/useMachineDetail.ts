@@ -4,6 +4,7 @@ import {
 	getLastMachineData,
 	getMachineImageUrl,
 	getStatusInfo,
+	hasTemperaturaAltaAlert,
 } from "@/app/indexPage/utils/machine";
 import { build24hChartSeries } from "../utils/chart24h";
 import { computeKpisFromDados } from "../utils/kpiFromDados";
@@ -28,27 +29,6 @@ function formatChartLabel(iso: string) {
 	const d = new Date(iso);
 	if (Number.isNaN(d.getTime())) return "";
 	return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-}
-
-function hasTemperaturaAltaAlert(machine: Machine): boolean {
-	return (
-		machine.alertas?.some((a) => {
-			const s = a.toLowerCase();
-			const falaDeTemp =
-				s.includes("temperatura") ||
-				s.includes("temp.") ||
-				/\btemp\b/.test(s) ||
-				s.includes("°c");
-			const indicaAlta =
-				s.includes("alta") ||
-				s.includes("alto") ||
-				s.includes("elev") ||
-				s.includes("superaquec") ||
-				s.includes("crít") ||
-				s.includes("crit");
-			return falaDeTemp && indicaAlta;
-		}) ?? false
-	);
 }
 
 function temperaturaSparkSeries(dados: MachineData[], maxPoints = 24) {
@@ -130,6 +110,7 @@ export function useMachineDetail(machine: Machine | null) {
 		}),
 		[kpiBlock],
 	);
+
 	const efficiency = kpiBlock.efficiency;
 	const efficiencyClass = kpiBlock.efficiencyClass;
 

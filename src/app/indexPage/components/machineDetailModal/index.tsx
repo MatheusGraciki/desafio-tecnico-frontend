@@ -4,6 +4,7 @@ import { MachineHeader } from "./MachineHeader";
 import { MachineSidebar } from "./MachineSidebar";
 import { MachineTabs } from "./MachineTabs";
 import { MachineChart } from "./MachineChart";
+import { MachineDetailTabPanels } from "./MachineDetailTabPanels";
 import { formatPotenciaW, formatRpm, formatTemperatura } from "@/app/indexPage/utils/format";
 import "./styles.scss";
 import type { MachineDetailModalProps } from "./type";
@@ -73,7 +74,7 @@ export function MachineDetailModal({
 											</div>
 											<div className="machine-detail-modal-kpi-line">
 												<span className="text-secondary">
-													Tempo Total em Oper:
+													Tempo Total em Operação:
 												</span>
 												<span>{detail.kpis.totalOper}</span>
 											</div>
@@ -158,15 +159,13 @@ export function MachineDetailModal({
 										/>
 									</>
 								) : (
-									<p className="machine-detail-modal-placeholder mb-0">
-										Conteúdo de &quot;
-										{detail.mainTab === "historico"
-											? "Histórico"
-											: detail.mainTab === "estatisticas"
-												? "Estatísticas"
-												: "Alertas & Sensores"}
-										&quot; em breve.
-									</p>
+									<MachineDetailTabPanels
+										tab={detail.mainTab}
+										machine={machine}
+										kpis={detail.kpis}
+										efficiency={detail.efficiency}
+										efficiencyClass={detail.efficiencyClass}
+									/>
 								)}
 							</div>
 						</div>
