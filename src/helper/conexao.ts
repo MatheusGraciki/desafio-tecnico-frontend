@@ -1,7 +1,6 @@
 import axios, { type AxiosRequestConfig } from "axios";
 
-/** Em dev, requisições vão para `/api/...` e o Vite encaminha ao backend se `VITE_API_URL` existir (veja `vite.config.ts`). Sem essa variável, `/api` não tem proxy e o POST falha. */
-const baseURL = import.meta.env.DEV ? "/api" : import.meta.env.VITE_API_URL;
+const baseURL = "/api";
 
 const authType = import.meta.env.VITE_API_AUTH_TYPE;
 const username = import.meta.env.VITE_API_USER;
