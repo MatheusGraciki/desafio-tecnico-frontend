@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FaCircleExclamation, FaRegCircleCheck } from "react-icons/fa6";
+import { FaBell, FaCircleExclamation, FaRegCircleCheck } from "react-icons/fa6";
 import { Alert, Col, Row } from "reactstrap";
 import { LuClock12, LuClock4 } from "react-icons/lu";
 
@@ -35,8 +35,8 @@ const STATUS_CONFIG: Record<
 		label: "Em Alerta",
 		textColor: "danger",
 		buttonColor: "danger",
-		smallIcon: <MdOutlineCrisisAlert size={16} />,
-		largeIcon: null,
+		smallIcon: null,
+		largeIcon: <FaBell size={28} />,
 	},
 	atencao: {
 		label: "Em Atenção",

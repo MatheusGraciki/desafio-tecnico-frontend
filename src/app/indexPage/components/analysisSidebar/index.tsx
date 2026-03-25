@@ -6,6 +6,15 @@ import { Tabs } from "./tabs/index";
 import type { AnalysisSidebarProps, AnalysisSidebarTab } from "./type";
 import "./styles.scss";
 
+type SidebarTab = "analise" | "previsoes";
+
+const PREVISAO_TEMPLATES = [
+	"Previsão p/ desgaste ferramenta",
+	"Revisão de lubrificação",
+	"Inspeção de correias",
+	"Calibração de eixo",
+] as const;
+
 export function AnalysisSidebar({
 	criticalMachines,
 	warningMachines,

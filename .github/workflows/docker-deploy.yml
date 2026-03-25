@@ -1,15 +1,13 @@
-name: Deploy to Cloud Run
+name: Deploy to Cloudflare Pages
 
 on:
   push:
     branches: ["master"]
 
 env:
-  PROJECT_ID: ecoautomacaoindustrial
-  REGION: us-central1
-  SERVICE: frontend
-  REPOSITORY: cloud-run-repo
-  IMAGE: frontend-EcoAutomacaoIndustrial
+  NODE_VERSION: 20
+  PAGES_PROJECT_NAME: eco-automacao-industrial
+  BUILD_DIR: dist
 
 jobs:
   security-checks:
@@ -17,104 +15,124 @@ jobs:
     runs-on: ubuntu-22.04
 
     permissions:
+      actions: read
       contents: read
-      security-events: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # 🔐 Secrets scan
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Gitleaks - Secrets Scan
         uses: gitleaks/gitleaks-action@v2
 
-      # 📦 Dependency scan
       - name: npm audit (HIGH / CRITICAL)
-        run: |
-          npm install
-          npm audit --audit-level=high
-      # 🔍 CodeQL
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-
-      - name: Analyze with CodeQL
-        uses: github/codeql-action/analyze@v3
+        run: npm audit --audit-level=high
 
   deploy:
-    name: Deploy
+    name: Build, Validate Docker and Deploy
     needs: security-checks
     runs-on: ubuntu-22.04
+
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_RUN_SA_KEY }}
+          fetch-depth: 0
 
-      - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          project_id: ${{ env.PROJECT_ID }}
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Configure Docker
-        run: |
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app
+        run: npm run build
+
       - name: Build Docker image
-        run: |
-          docker build -t \
-          ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest .
-      - name: Push Docker image
-        run: |
-          docker push \
-          ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest
-      - name: Deploy to Cloud Run
-        run: |
-          gcloud run deploy ${{ env.SERVICE }} \
-            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest \
-            --region ${{ env.REGION }} \
-            --platform managed \
-            --allow-unauthenticated
+        run: docker build -t frontend-test .
+
+      - name: List Docker images
+        run: docker images
+
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy ${{ env.BUILD_DIR }} --project-name=${{ env.PAGES_PROJECT_NAME }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
   notify-security-failure:
     name: Notify Discord (Security Failure)
     runs-on: ubuntu-22.04
     needs: security-checks
-    if: needs.security-checks.result == 'failure'
+    if: ${{ always() && needs.security-checks.result == 'failure' }}
     steps:
       - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_FAILURE }}
+          PROJECT_NAME: ${{ env.PAGES_PROJECT_NAME }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
         run: |
-          curl -H "Content-Type: application/json" \
-          -d '{
-            "content": "🚨 **DEPLOY BLOQUEADO (SEGURANÇA)**\n\n🔒 Política PROD:\n• Secrets vazados ❌\n• Vulnerabilidades HIGH / CRITICAL ❌\n• CodeQL alerts ❌\n\n🔹 Serviço: **${{ env.SERVICE }}**\n🔹 Branch: **${{ github.ref_name }}**\n📝 Commit: _${{ github.event.head_commit.message }}_\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          }' \
-          ${{ secrets.DISCORD_WEBHOOK_FAILURE }}
+          curl -f -H "Content-Type: application/json" \
+            -d "{
+              \"content\": \"🚨 **DEPLOY BLOQUEADO (SEGURANÇA)**\n\n🔒 Política PROD:\n• Secrets vazados ❌\n• Vulnerabilidades HIGH / CRITICAL ❌\n\n🔹 Projeto: **${PROJECT_NAME}**\n🔹 Branch: **${BRANCH_NAME}**\n\n🔗 Logs:\nhttps://github.com/${REPO}/actions/runs/${RUN_ID}\"
+            }" \
+            "$DISCORD_WEBHOOK"
+
   notify-deploy-failure:
     name: Notify Discord (Deploy Failure)
     runs-on: ubuntu-22.04
     needs: deploy
-    if: needs.deploy.result == 'failure'
+    if: ${{ always() && needs.deploy.result == 'failure' }}
     steps:
       - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_FAILURE }}
+          PROJECT_NAME: ${{ env.PAGES_PROJECT_NAME }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
         run: |
-          curl -H "Content-Type: application/json" \
-          -d '{
-            "content": "❌ **DEPLOY PROD FALHOU**\n\n🔹 Serviço: **${{ env.SERVICE }}**\n🔹 Branch: **${{ github.ref_name }}**\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          }' \
-          ${{ secrets.DISCORD_WEBHOOK_FAILURE }}
+          curl -f -H "Content-Type: application/json" \
+            -d "{
+              \"content\": \"❌ **DEPLOY PROD FALHOU**\n\n🔹 Projeto: **${PROJECT_NAME}**\n🔹 Branch: **${BRANCH_NAME}**\n\n🔗 Logs:\nhttps://github.com/${REPO}/actions/runs/${RUN_ID}\"
+            }" \
+            "$DISCORD_WEBHOOK"
+
   notify-success:
     name: Notify Discord (Success)
     runs-on: ubuntu-22.04
     needs: deploy
-    if: needs.deploy.result == 'success'
+    if: ${{ always() && needs.deploy.result == 'success' }}
     steps:
       - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_SUCCESS }}
+          PROJECT_NAME: ${{ env.PAGES_PROJECT_NAME }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
         run: |
-          curl -H "Content-Type: application/json" \
-          -d '{
-            "content": "✅ **DEPLOY PROD REALIZADO COM SUCESSO**\n\n🔹 Serviço: **${{ env.SERVICE }}**\n🔹 Branch: **${{ github.ref_name }}**\n📝 Commit: _${{ github.event.head_commit.message }}_\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          }' \
-          ${{ secrets.DISCORD_WEBHOOK_SUCCESS }}
+          curl -f -H "Content-Type: application/json" \
+            -d "{
+              \"content\": \"✅ **DEPLOY PROD REALIZADO COM SUCESSO**\n\n🔹 Projeto: **${PROJECT_NAME}**\n🔹 Branch: **${BRANCH_NAME}**\n\n🔗 Logs:\nhttps://github.com/${REPO}/actions/runs/${RUN_ID}\"
+            }" \
+            "$DISCORD_WEBHOOK"

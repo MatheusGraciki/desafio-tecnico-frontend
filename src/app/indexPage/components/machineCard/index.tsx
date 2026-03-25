@@ -4,11 +4,13 @@ import {
 	FaBolt,
 	FaCircleExclamation,
 	FaCirclePause,
+	FaDroplet,
 	FaGaugeHigh,
 	FaGear,
 	FaIndustry,
 	FaTemperatureThreeQuarters,
 	FaTriangleExclamation,
+	FaWaveSquare,
 } from "react-icons/fa6";
 import type { IconType } from "react-icons";
 import type { Machine, MachineStatusCategory } from "@/services/machines/type";
