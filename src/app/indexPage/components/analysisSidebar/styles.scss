@@ -84,6 +84,23 @@
 			min-width: 0;
 		}
 	}
+
+	&-row-title-line {
+		min-width: 0;
+		flex: 1;
+	}
+
+	&-row-alert-today {
+		flex-shrink: 0;
+		padding: 0.1rem 0.4rem;
+		border-radius: 0.25rem;
+		font-size: 0.65rem;
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: 0.02em;
+		color: #fff;
+		background: linear-gradient(135deg, #c62828 0%, #e53935 100%);
+	}
 }
 
 .analysis-sidebar-list-modal-dialog {

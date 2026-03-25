@@ -1,9 +1,17 @@
+import { FaIndustry } from "react-icons/fa6";
 import { TiLocation } from "react-icons/ti";
 import Select from "@/components/select";
 import type { IndexFiltersProps } from "./type";
 import "./styles.scss";
 
-export function IndexFilters({ selectedLocation, locations, onLocationChange }: IndexFiltersProps) {
+export function IndexFilters({
+	selectedLocation,
+	locations,
+	onLocationChange,
+	selectedMachineKind,
+	machineKinds,
+	onMachineKindChange,
+}: IndexFiltersProps) {
 	const locationOptions = [
 		{ value: "all", label: "Local: --" },
 		...locations
@@ -11,7 +19,11 @@ export function IndexFilters({ selectedLocation, locations, onLocationChange }: 
 			.map((location) => ({ value: location, label: `Local: ${location}` })),
 	];
 
-	const arrangementOptions = [{ value: "maquinas", label: "Arranjo por: Máquinas CNC" }];
+	const kindOptions = machineKinds.map((kind) =>
+		kind === "all"
+			? { value: "all", label: "Tipo: --" }
+			: { value: kind, label: `Tipo: ${kind}` },
+	);
 
 	return (
 		<div className="index-filters">
@@ -27,10 +39,11 @@ export function IndexFilters({ selectedLocation, locations, onLocationChange }: 
 
 			<div className="index-filters-field index-filters-arrangement">
 				<Select
-					value="maquinas"
-					options={arrangementOptions}
-					ariaLabel="Arranjo de máquinas"
-					isDisabled
+					value={selectedMachineKind}
+					options={kindOptions}
+					onChange={onMachineKindChange}
+					ariaLabel="Filtrar por tipo de máquina"
+					icon={<FaIndustry size={16} className="text-primary" />}
 				/>
 			</div>
 		</div>

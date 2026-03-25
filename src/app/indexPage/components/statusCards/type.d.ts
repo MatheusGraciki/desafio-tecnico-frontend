@@ -14,4 +14,6 @@ export interface StatusCardItem {
 
 export interface StatusCardsProps {
 	items: StatusCardItem[];
+	/** Abre o modal de listagem filtrada pelo tipo do card (operando, alerta, atenção, parada). */
+	onDetailsClick?: (categoryKey: StatusCardItem["key"]) => void;
 }

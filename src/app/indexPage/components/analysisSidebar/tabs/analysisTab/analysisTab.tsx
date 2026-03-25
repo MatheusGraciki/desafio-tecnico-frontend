@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaBolt } from "react-icons/fa6";
 import { ModalDefault } from "@/components/modalDefault";
 import { MachineChart } from "../../../machineChart";
-import { MachineCard } from "./MachineCard";
+import { AnalysisMachineRow } from "@/app/indexPage/components/analysisMachineRow";
 import type { Machine } from "@/services/machines/type";
 
 type AnalysisSidebarAnaliseTabProps = {
@@ -60,7 +60,7 @@ export function AnalysTab({
 							{criticalMachines
 								.slice(0, SIDEBAR_LIST_PREVIEW)
 								.map((machine) => (
-									<MachineCard
+									<AnalysisMachineRow
 										key={machine.id}
 										machine={machine}
 										variant="critical"
@@ -101,7 +101,7 @@ export function AnalysTab({
 					<>
 						<div className="analysis-sidebar-row-group">
 							{warningMachines.slice(0, SIDEBAR_LIST_PREVIEW).map((machine) => (
-								<MachineCard
+								<AnalysisMachineRow
 									key={machine.id}
 									machine={machine}
 									variant="warning"
@@ -146,7 +146,7 @@ export function AnalysTab({
 			>
 				<div className="analysis-sidebar-row-group">
 					{modalMachines.map((machine) => (
-						<MachineCard
+						<AnalysisMachineRow
 							key={machine.id}
 							machine={machine}
 							variant={listModal === "critical" ? "critical" : "warning"}

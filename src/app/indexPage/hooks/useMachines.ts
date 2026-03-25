@@ -1,63 +1,64 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { ApiError } from "@/helper/apiError";
 import { fetchMachines } from "@/services/machines";
 import type { Machine } from "@/services/machines/type";
-import { countMachinesByStatus, getStatusCategory } from "../utils/machine";
+import { isSameCalendarDay } from "../utils/date";
+import {
+	countMachinesByStatus,
+	getStatusCategory,
+	inferMachineKind,
+} from "../utils/machine";
 import type { MachineStatusCount } from "../utils/machine/type";
 
-function isToday(value?: string | null) {
-	if (!value) return false;
-
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) return false;
-
-	const now = new Date();
-	return (
-		date.getFullYear() === now.getFullYear() &&
-		date.getMonth() === now.getMonth() &&
-		date.getDate() === now.getDate()
-	);
-}
+const MACHINES_PER_PAGE = 9;
 
 export function useIndexMachines() {
 	const [machines, setMachines] = useState<Machine[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [selectedLocation, setSelectedLocation] = useState("all");
+	const [selectedMachineKind, setSelectedMachineKind] = useState("all");
 	const [machinesPage, setMachinesPage] = useState(0);
+
+	const loadMachines = useCallback(async () => {
+		setLoading(true);
+		setError(null);
+
+		try {
+			const data = await fetchMachines();
+			if (!Array.isArray(data)) {
+				throw new ApiError(
+					"Resposta inválida da API (esperado lista de máquinas).",
+				);
+			}
+			setMachines(data);
+		} catch (err) {
+			setMachines([]);
+			setError(
+				err instanceof ApiError
+					? err.message
+					: "Não foi possível carregar as máquinas.",
+			);
+		} finally {
+			setLoading(false);
+		}
+	}, []);
 
 	useEffect(() => {
 		let active = true;
 
-		async function loadMachines() {
-			setLoading(true);
-			setError(null);
-
-			try {
-				const data = await fetchMachines();
-				if (!active) return;
-				if (!Array.isArray(data)) {
-					setError("Resposta inválida da API (esperado lista de máquinas).");
-					setMachines([]);
-					return;
-				}
-				setMachines(data);
-			} catch {
-				if (!active) return;
-				setError("Não foi possível carregar as máquinas no momento.");
-			} finally {
-				if (active) {
-					setLoading(false);
-				}
-			}
+		async function syncMachines() {
+			await loadMachines();
+			if (!active) return;
 		}
 
-		loadMachines();
+		void syncMachines();
 
 		return () => {
 			active = false;
 		};
-	}, []);
+	}, [loadMachines]);
 
 	const locations = useMemo(
 		() => [
@@ -71,22 +72,43 @@ export function useIndexMachines() {
 		[machines],
 	);
 
-	const filteredMachines = useMemo(() => {
-		if (selectedLocation === "all") return machines;
-		return machines.filter((machine) => machine?.local === selectedLocation);
-	}, [machines, selectedLocation]);
+	const machineKinds = useMemo(() => {
+		const kinds = new Set(
+			machines.map((m) => inferMachineKind(m.codigo ?? "")),
+		);
+		return ["all", ...[...kinds].sort((a, b) => a.localeCompare(b, "pt-BR"))];
+	}, [machines]);
 
-	const machinesPerPage = 9;
-	const totalMachinePages = Math.max(1, Math.ceil(filteredMachines.length / machinesPerPage));
+	const filteredMachines = useMemo(() => {
+		return machines.filter((machine) => {
+			if (selectedLocation !== "all" && machine?.local !== selectedLocation) {
+				return false;
+			}
+			if (selectedMachineKind !== "all") {
+				const kind = inferMachineKind(machine.codigo ?? "");
+				if (kind !== selectedMachineKind) return false;
+			}
+			return true;
+		});
+	}, [machines, selectedLocation, selectedMachineKind]);
+
+	const totalMachinePages = Math.max(
+		1,
+		Math.ceil(filteredMachines.length / MACHINES_PER_PAGE),
+	);
 
 	const paginatedMachines = useMemo(
 		() =>
 			filteredMachines.slice(
-				machinesPage * machinesPerPage,
-				machinesPage * machinesPerPage + machinesPerPage,
+				machinesPage * MACHINES_PER_PAGE,
+				machinesPage * MACHINES_PER_PAGE + MACHINES_PER_PAGE,
 			),
 		[filteredMachines, machinesPage],
 	);
+
+	useEffect(() => {
+		setMachinesPage(0);
+	}, [selectedLocation, selectedMachineKind]);
 
 	useEffect(() => {
 		if (machinesPage > totalMachinePages - 1) {
@@ -103,37 +125,50 @@ export function useIndexMachines() {
 		() =>
 			filteredMachines.filter(
 				(machine) =>
-					getStatusCategory(machine?.status) === "alerta" && isToday(machine?.ultimaAtualizacao),
+					getStatusCategory(machine?.status) === "alerta" &&
+					isSameCalendarDay(machine?.ultimaAtualizacao),
 			).length,
 		[filteredMachines],
 	);
 
 	const criticalMachines = useMemo(
-		() => filteredMachines.filter((machine) => getStatusCategory(machine?.status) === "alerta"),
+		() =>
+			filteredMachines.filter(
+				(machine) => getStatusCategory(machine?.status) === "alerta",
+			),
 		[filteredMachines],
 	);
 
 	const warningMachines = useMemo(
-		() => filteredMachines.filter((machine) => getStatusCategory(machine?.status) === "atencao"),
+		() =>
+			filteredMachines.filter(
+				(machine) => getStatusCategory(machine?.status) === "atencao",
+			),
 		[filteredMachines],
 	);
 
 	const mergeMachine = useCallback((updated: Machine) => {
 		setMachines((prev) =>
 			prev.map((machine) =>
-				String(machine.id) === String(updated.id) ? { ...machine, ...updated } : machine,
+				String(machine.id) === String(updated.id)
+					? { ...machine, ...updated }
+					: machine,
 			),
 		);
 	}, []);
 
 	return {
-		loading,
 		error,
+		loading,
+		retryLoad: loadMachines,
 		selectedLocation,
 		setSelectedLocation,
+		selectedMachineKind,
+		setSelectedMachineKind,
+		machineKinds,
 		machinesPage,
 		setMachinesPage,
-		machinesPerPage,
+		machinesPerPage: MACHINES_PER_PAGE,
 		totalMachinePages,
 		locations,
 		filteredMachines,

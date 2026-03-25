@@ -4,7 +4,9 @@ import {
 	getLastMachineData,
 	getMachineImageUrl,
 	getStatusInfo,
+	hasTemperaturaAltaAlert,
 } from "@/app/indexPage/utils/machine";
+import { build24hChartSeries } from "../utils/chart24h";
 import { computeKpisFromDados } from "../utils/kpiFromDados";
 
 export type MainTab = "resumo" | "historico" | "estatisticas" | "alertas";
@@ -27,27 +29,6 @@ function formatChartLabel(iso: string) {
 	const d = new Date(iso);
 	if (Number.isNaN(d.getTime())) return "";
 	return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-}
-
-function hasTemperaturaAltaAlert(machine: Machine): boolean {
-	return (
-		machine.alertas?.some((a) => {
-			const s = a.toLowerCase();
-			const falaDeTemp =
-				s.includes("temperatura") ||
-				s.includes("temp.") ||
-				/\btemp\b/.test(s) ||
-				s.includes("°c");
-			const indicaAlta =
-				s.includes("alta") ||
-				s.includes("alto") ||
-				s.includes("elev") ||
-				s.includes("superaquec") ||
-				s.includes("crít") ||
-				s.includes("crit");
-			return falaDeTemp && indicaAlta;
-		}) ?? false
-	);
 }
 
 function temperaturaSparkSeries(dados: MachineData[], maxPoints = 24) {
@@ -100,14 +81,25 @@ export function useMachineDetail(machine: Machine | null) {
 		return dados.slice(start, start + windowSize);
 	}, [dados, hasEnoughSamplesForRange, maxStart, windowSize, windowStart]);
 
-	const chartData = useMemo(
-		() =>
-			chartSlice.map((d) => ({
-				label: formatChartLabel(d.timestamp),
-				rpm: d.rpm,
-			})),
-		[chartSlice],
-	);
+	const chart24h = useMemo(() => {
+		if (range !== "24h" || !dados.length || !hasEnoughSamplesForRange) return null;
+		return build24hChartSeries(dados);
+	}, [range, dados, hasEnoughSamplesForRange]);
+
+	const chartData = useMemo(() => {
+		if (range === "24h") {
+			if (!chart24h) return [];
+			return chart24h.points.map((p) => ({
+				label: p.label,
+				rpm: p.rpm,
+				timeMs: p.timeMs,
+			}));
+		}
+		return chartSlice.map((d) => ({
+			label: formatChartLabel(d.timestamp),
+			rpm: d.rpm,
+		}));
+	}, [range, chart24h, chartSlice]);
 
 	const kpiBlock = useMemo(() => computeKpisFromDados(dados), [dados]);
 	const kpis = useMemo(
@@ -118,6 +110,7 @@ export function useMachineDetail(machine: Machine | null) {
 		}),
 		[kpiBlock],
 	);
+
 	const efficiency = kpiBlock.efficiency;
 	const efficiencyClass = kpiBlock.efficiencyClass;
 
@@ -150,6 +143,7 @@ export function useMachineDetail(machine: Machine | null) {
 		showTempBadge,
 		dados,
 		chartData,
+		chart24hAxis: range === "24h" ? chart24h?.axis ?? null : null,
 		temperaturaSpark,
 		hasEnoughSamplesForRange,
 		rangeDisabled,
