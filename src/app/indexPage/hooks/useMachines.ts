@@ -2,22 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { fetchMachines } from "@/services/machines";
 import type { Machine } from "@/services/machines/type";
+import { isSameCalendarDay } from "../utils/date";
 import { countMachinesByStatus, getStatusCategory } from "../utils/machine";
 import type { MachineStatusCount } from "../utils/machine/type";
-
-function isToday(value?: string | null) {
-	if (!value) return false;
-
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) return false;
-
-	const now = new Date();
-	return (
-		date.getFullYear() === now.getFullYear() &&
-		date.getMonth() === now.getMonth() &&
-		date.getDate() === now.getDate()
-	);
-}
 
 export function useIndexMachines() {
 	const [machines, setMachines] = useState<Machine[]>([]);
@@ -103,7 +90,8 @@ export function useIndexMachines() {
 		() =>
 			filteredMachines.filter(
 				(machine) =>
-					getStatusCategory(machine?.status) === "alerta" && isToday(machine?.ultimaAtualizacao),
+					getStatusCategory(machine?.status) === "alerta" &&
+					isSameCalendarDay(machine?.ultimaAtualizacao),
 			).length,
 		[filteredMachines],
 	);

@@ -1,5 +1,4 @@
 import { Modal, ModalBody } from "reactstrap";
-import type { Machine } from "@/services/machines/type";
 import { useMachineDetail } from "./hooks/useMachineDetail";
 import { MachineHeader } from "./MachineHeader";
 import { MachineSidebar } from "./MachineSidebar";
@@ -7,12 +6,9 @@ import { MachineTabs } from "./MachineTabs";
 import { MachineChart } from "./MachineChart";
 import { formatPotenciaW, formatRpm, formatTemperatura } from "@/app/indexPage/utils/format";
 import "./styles.scss";
+import type { MachineDetailModalProps } from "./type";
 
-export type MachineDetailModalProps = {
-	machine: Machine | null;
-	isOpen: boolean;
-	onClose: () => void;
-};
+export type { MachineDetailModalProps };
 
 export function MachineDetailModal({
 	machine,
@@ -20,6 +16,7 @@ export function MachineDetailModal({
 	onClose,
 }: MachineDetailModalProps) {
 	const detail = useMachineDetail(machine);
+
 	return (
 		<Modal
 			isOpen={isOpen}

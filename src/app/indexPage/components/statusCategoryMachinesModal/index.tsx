@@ -1,5 +1,6 @@
 import type { Machine, MachineStatusCategory } from "@/services/machines/type";
 import { ModalDefault } from "@/components/modalDefault";
+import { isMachineAlertRegisteredToday } from "@/app/indexPage/utils/machine";
 import { AnalysisMachineRow } from "../analysisMachineRow";
 import { statusCategoryToRowVariant } from "../analysisMachineRow/categoryVariant";
 
@@ -21,6 +22,7 @@ export function StatusCategoryMachinesModal({
 	onSelectMachine,
 }: StatusCategoryMachinesModalProps) {
 	const variant = category ? statusCategoryToRowVariant(category) : "neutral";
+	const isAlertaList = category === "alerta";
 
 	return (
 		<ModalDefault
@@ -43,6 +45,9 @@ export function StatusCategoryMachinesModal({
 								machine={machine}
 								variant={variant}
 								onSelect={onSelectMachine}
+								alertRegisteredToday={
+									isAlertaList && isMachineAlertRegisteredToday(machine)
+								}
 							/>
 						))}
 					</div>
