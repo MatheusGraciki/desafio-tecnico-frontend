@@ -3,7 +3,7 @@ import { Card } from "@/components/card";
 import type { StatusCardsProps } from "./type";
 import "./styles.scss";
 
-export function StatusCards({ items }: StatusCardsProps) {
+export function StatusCards({ items, onDetailsClick }: StatusCardsProps) {
 	return (
 		<div className="status-summary-cards">
 			{items.map((item) => {
@@ -41,9 +41,11 @@ export function StatusCards({ items }: StatusCardsProps) {
 								</div>
 								<hr className="my-1" />
 								<Button
+									type="button"
 									color={item.buttonColor}
 									size="sm"
 									className="align-self-center status-summary-button"
+									onClick={() => onDetailsClick?.(item.key)}
 								>
 									Detalhes
 								</Button>

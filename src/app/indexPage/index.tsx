@@ -9,10 +9,12 @@ import { MachineDetailModal } from "./components/machineDetailModal";
 import { IndexFilters } from "./components/indexFilters";
 import { StatusDistribution } from "./components/statusDistribution";
 import { MachineCard } from "./components/machineCard";
+import { StatusCategoryMachinesModal } from "./components/statusCategoryMachinesModal";
 import { StatusCards } from "./components/statusCards";
 import { useIndexMachines } from "./hooks/useMachines";
 import "./styles.scss";
 
+import { getStatusCategory } from "@/app/indexPage/utils/machine";
 import type { Machine, MachineStatusCategory } from "@/services/machines/type";
 import type { SummaryItem } from "./type";
 import { MdOutlineCrisisAlert } from "react-icons/md";
@@ -76,6 +78,7 @@ function DashboardSkeleton() {
 export default function IndexPage() {
 	const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
 	const [machineToEdit, setMachineToEdit] = useState<Machine | null>(null);
+	const [statusListCategory, setStatusListCategory] = useState<MachineStatusCategory | null>(null);
 
 	const {
 		loading,
@@ -119,6 +122,17 @@ export default function IndexPage() {
 			},
 		);
 	}, [alertsEnteredToday, filteredMachines.length, statusCounts]);
+
+	const machinesForStatusModal = useMemo(() => {
+		if (!statusListCategory) return [];
+		return filteredMachines.filter(
+			(machine) => getStatusCategory(machine.status) === statusListCategory,
+		);
+	}, [filteredMachines, statusListCategory]);
+
+	const statusModalTitle = statusListCategory
+		? `Máquinas — ${STATUS_CONFIG[statusListCategory].label}`
+		: "";
 
 	function handlePreviousPage() {
 		setMachinesPage((currentPage) => {
@@ -165,7 +179,10 @@ export default function IndexPage() {
 							</Row>
 
 							<div className="index-summary-wrapper">
-								<StatusCards items={summaryItems} />
+								<StatusCards
+									items={summaryItems}
+									onDetailsClick={(key) => setStatusListCategory(key as MachineStatusCategory)}
+								/>
 							</div>
 
 							<div className="index-distribution">
@@ -210,6 +227,18 @@ export default function IndexPage() {
 					</Row>
 				</>
 			)}
+
+			<StatusCategoryMachinesModal
+				isOpen={statusListCategory !== null}
+				title={statusModalTitle}
+				category={statusListCategory}
+				machines={machinesForStatusModal}
+				onClose={() => setStatusListCategory(null)}
+				onSelectMachine={(machine) => {
+					setSelectedMachine(machine);
+					setStatusListCategory(null);
+				}}
+			/>
 
 			<MachineEditModal
 				isOpen={Boolean(machineToEdit)}
