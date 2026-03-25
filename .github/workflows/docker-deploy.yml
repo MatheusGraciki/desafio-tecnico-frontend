@@ -1,15 +1,13 @@
-name: Deploy to Cloud Run
+name: Deploy to Cloudflare Pages
 
 on:
   push:
     branches: ["master"]
 
 env:
-  PROJECT_ID: ecoautomacaoindustrial
-  REGION: us-central1
-  SERVICE: frontend
-  REPOSITORY: cloud-run-eco
-  IMAGE: frontend-ecoautomacaoindustrial
+  NODE_VERSION: 20
+  PAGES_PROJECT_NAME: eco-automacao-industrial
+  BUILD_DIR: dist
 
 jobs:
   security-checks:
@@ -29,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - name: Install dependencies
@@ -42,9 +40,12 @@ jobs:
         run: npm audit --audit-level=high
 
   deploy:
-    name: Deploy
+    name: Build, Validate Docker and Deploy
     needs: security-checks
     runs-on: ubuntu-22.04
+
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -52,37 +53,29 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          credentials_json: ${{ secrets.GCP_RUN_SA_KEY }}
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.PROJECT_ID }}
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Configure Docker
-        run: |
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+      - name: Build app
+        run: npm run build
 
       - name: Build Docker image
-        run: |
-          docker build -t \
-            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest .
+        run: docker build -t frontend-test .
 
-      - name: Push Docker image
-        run: |
-          docker push \
-            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest
+      - name: List Docker images
+        run: docker images
 
-      - name: Deploy to Cloud Run
-        run: |
-          gcloud run deploy ${{ env.SERVICE }} \
-            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest \
-            --region ${{ env.REGION }} \
-            --platform managed \
-            --allow-unauthenticated
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy ${{ env.BUILD_DIR }} --project-name=${{ env.PAGES_PROJECT_NAME }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   notify-security-failure:
     name: Notify Discord (Security Failure)
@@ -94,7 +87,7 @@ jobs:
         run: |
           curl -f -H "Content-Type: application/json" \
             -d '{
-              "content": "🚨 **DEPLOY BLOQUEADO (SEGURANÇA)**\n\n🔒 Política PROD:\n• Secrets vazados ❌\n• Vulnerabilidades HIGH / CRITICAL ❌\n\n🔹 Serviço: **${{ env.SERVICE }}**\n🔹 Branch: **${{ github.ref_name }}**\n📝 Commit: _${{ github.event.head_commit.message }}_\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "content": "🚨 **DEPLOY BLOQUEADO (SEGURANÇA)**\n\n🔒 Política PROD:\n• Secrets vazados ❌\n• Vulnerabilidades HIGH / CRITICAL ❌\n\n🔹 Projeto: **${{ env.PAGES_PROJECT_NAME }}**\n🔹 Branch: **${{ github.ref_name }}**\n📝 Commit: _${{ github.event.head_commit.message }}_\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }' \
             "${{ secrets.DISCORD_WEBHOOK_FAILURE }}"
 
@@ -108,7 +101,7 @@ jobs:
         run: |
           curl -f -H "Content-Type: application/json" \
             -d '{
-              "content": "❌ **DEPLOY PROD FALHOU**\n\n🔹 Serviço: **${{ env.SERVICE }}**\n🔹 Branch: **${{ github.ref_name }}**\n📝 Commit: _${{ github.event.head_commit.message }}_\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "content": "❌ **DEPLOY PROD FALHOU**\n\n🔹 Projeto: **${{ env.PAGES_PROJECT_NAME }}**\n🔹 Branch: **${{ github.ref_name }}**\n📝 Commit: _${{ github.event.head_commit.message }}_\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }' \
             "${{ secrets.DISCORD_WEBHOOK_FAILURE }}"
 
@@ -122,6 +115,6 @@ jobs:
         run: |
           curl -f -H "Content-Type: application/json" \
             -d '{
-              "content": "✅ **DEPLOY PROD REALIZADO COM SUCESSO**\n\n🔹 Serviço: **${{ env.SERVICE }}**\n🔹 Branch: **${{ github.ref_name }}**\n📝 Commit: _${{ github.event.head_commit.message }}_\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "content": "✅ **DEPLOY PROD REALIZADO COM SUCESSO**\n\n🔹 Projeto: **${{ env.PAGES_PROJECT_NAME }}**\n🔹 Branch: **${{ github.ref_name }}**\n📝 Commit: _${{ github.event.head_commit.message }}_\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }' \
             "${{ secrets.DISCORD_WEBHOOK_SUCCESS }}"
