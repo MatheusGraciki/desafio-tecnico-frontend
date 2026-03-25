@@ -152,7 +152,10 @@ export function MachineDetailModal({
 												Temperatura: {formatTemperatura(detail.lastData?.temperatura)}
 											</span>
 										</div>
-										<MachineChart chartData={detail.chartData} />
+										<MachineChart
+											chartData={detail.chartData}
+											chart24hAxis={detail.chart24hAxis}
+										/>
 									</>
 								) : (
 									<p className="machine-detail-modal-placeholder mb-0">

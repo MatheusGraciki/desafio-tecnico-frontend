@@ -5,6 +5,7 @@ import {
 	getMachineImageUrl,
 	getStatusInfo,
 } from "@/app/indexPage/utils/machine";
+import { build24hChartSeries } from "../utils/chart24h";
 import { computeKpisFromDados } from "../utils/kpiFromDados";
 
 export type MainTab = "resumo" | "historico" | "estatisticas" | "alertas";
@@ -100,14 +101,25 @@ export function useMachineDetail(machine: Machine | null) {
 		return dados.slice(start, start + windowSize);
 	}, [dados, hasEnoughSamplesForRange, maxStart, windowSize, windowStart]);
 
-	const chartData = useMemo(
-		() =>
-			chartSlice.map((d) => ({
-				label: formatChartLabel(d.timestamp),
-				rpm: d.rpm,
-			})),
-		[chartSlice],
-	);
+	const chart24h = useMemo(() => {
+		if (range !== "24h" || !dados.length || !hasEnoughSamplesForRange) return null;
+		return build24hChartSeries(dados);
+	}, [range, dados, hasEnoughSamplesForRange]);
+
+	const chartData = useMemo(() => {
+		if (range === "24h") {
+			if (!chart24h) return [];
+			return chart24h.points.map((p) => ({
+				label: p.label,
+				rpm: p.rpm,
+				timeMs: p.timeMs,
+			}));
+		}
+		return chartSlice.map((d) => ({
+			label: formatChartLabel(d.timestamp),
+			rpm: d.rpm,
+		}));
+	}, [range, chart24h, chartSlice]);
 
 	const kpiBlock = useMemo(() => computeKpisFromDados(dados), [dados]);
 	const kpis = useMemo(
@@ -150,6 +162,7 @@ export function useMachineDetail(machine: Machine | null) {
 		showTempBadge,
 		dados,
 		chartData,
+		chart24hAxis: range === "24h" ? chart24h?.axis ?? null : null,
 		temperaturaSpark,
 		hasEnoughSamplesForRange,
 		rangeDisabled,
