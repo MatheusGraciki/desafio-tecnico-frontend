@@ -84,12 +84,18 @@ jobs:
     if: ${{ always() && needs.security-checks.result == 'failure' }}
     steps:
       - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_FAILURE }}
+          PROJECT_NAME: ${{ env.PAGES_PROJECT_NAME }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           curl -f -H "Content-Type: application/json" \
-            -d '{
-              "content": "🚨 **DEPLOY BLOQUEADO (SEGURANÇA)**\n\n🔒 Política PROD:\n• Secrets vazados ❌\n• Vulnerabilidades HIGH / CRITICAL ❌\n\n🔹 Projeto: **${{ env.PAGES_PROJECT_NAME }}**\n🔹 Branch: **${{ github.ref_name }}**\n📝 Commit: _${{ github.event.head_commit.message }}_\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            }' \
-            "${{ secrets.DISCORD_WEBHOOK_FAILURE }}"
+            -d "{
+              \"content\": \"🚨 **DEPLOY BLOQUEADO (SEGURANÇA)**\n\n🔒 Política PROD:\n• Secrets vazados ❌\n• Vulnerabilidades HIGH / CRITICAL ❌\n\n🔹 Projeto: **${PROJECT_NAME}**\n🔹 Branch: **${BRANCH_NAME}**\n\n🔗 Logs:\nhttps://github.com/${REPO}/actions/runs/${RUN_ID}\"
+            }" \
+            "$DISCORD_WEBHOOK"
 
   notify-deploy-failure:
     name: Notify Discord (Deploy Failure)
@@ -98,12 +104,18 @@ jobs:
     if: ${{ always() && needs.deploy.result == 'failure' }}
     steps:
       - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_FAILURE }}
+          PROJECT_NAME: ${{ env.PAGES_PROJECT_NAME }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           curl -f -H "Content-Type: application/json" \
-            -d '{
-              "content": "❌ **DEPLOY PROD FALHOU**\n\n🔹 Projeto: **${{ env.PAGES_PROJECT_NAME }}**\n🔹 Branch: **${{ github.ref_name }}**\n📝 Commit: _${{ github.event.head_commit.message }}_\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            }' \
-            "${{ secrets.DISCORD_WEBHOOK_FAILURE }}"
+            -d "{
+              \"content\": \"❌ **DEPLOY PROD FALHOU**\n\n🔹 Projeto: **${PROJECT_NAME}**\n🔹 Branch: **${BRANCH_NAME}**\n\n🔗 Logs:\nhttps://github.com/${REPO}/actions/runs/${RUN_ID}\"
+            }" \
+            "$DISCORD_WEBHOOK"
 
   notify-success:
     name: Notify Discord (Success)
@@ -112,9 +124,15 @@ jobs:
     if: ${{ always() && needs.deploy.result == 'success' }}
     steps:
       - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_SUCCESS }}
+          PROJECT_NAME: ${{ env.PAGES_PROJECT_NAME }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           curl -f -H "Content-Type: application/json" \
-            -d '{
-              "content": "✅ **DEPLOY PROD REALIZADO COM SUCESSO**\n\n🔹 Projeto: **${{ env.PAGES_PROJECT_NAME }}**\n🔹 Branch: **${{ github.ref_name }}**\n📝 Commit: _${{ github.event.head_commit.message }}_\n\n🔗 Logs:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            }' \
-            "${{ secrets.DISCORD_WEBHOOK_SUCCESS }}"
+            -d "{
+              \"content\": \"✅ **DEPLOY PROD REALIZADO COM SUCESSO**\n\n🔹 Projeto: **${PROJECT_NAME}**\n🔹 Branch: **${BRANCH_NAME}**\n\n🔗 Logs:\nhttps://github.com/${REPO}/actions/runs/${RUN_ID}\"
+            }" \
+            "$DISCORD_WEBHOOK"
