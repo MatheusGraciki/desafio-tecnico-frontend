@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+
 import type { Machine, MachineData } from "@/services/machines/type";
 import {
 	getLastMachineData,
 	getMachineImageUrl,
 	getStatusInfo,
+	getMachineAlertaLabels,
 	hasTemperaturaAltaAlert,
 } from "@/app/indexPage/utils/machine";
 import { build24hChartSeries } from "../utils/chart24h";
-import { computeKpisFromDados } from "../utils/kpiFromDados";
+import { computeKpisFromDados, getTelemetryStatus } from "../utils/kpiFromDados";
 
 export type MainTab = "resumo" | "historico" | "estatisticas" | "alertas";
 export type RangeKey = "24h" | "7d" | "30d";
@@ -18,36 +20,53 @@ const RANGE_WINDOW: Record<RangeKey, number> = {
 	"30d": 96,
 };
 
-/** Mínimo de pontos na série para permitir o período (7d/30d sem dados suficientes → não exibe gráfico). */
 const MIN_SAMPLES_FOR_RANGE: Record<RangeKey, number> = {
 	"24h": 1,
 	"7d": 48,
 	"30d": 96,
 };
 
-function formatChartLabel(iso: string) {
-	const d = new Date(iso);
-	if (Number.isNaN(d.getTime())) return "";
-	return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+function formatChartLabel(timestamp: string) {
+	const date = new Date(timestamp);
+	if (Number.isNaN(date.getTime())) return "";
+
+	return date.toLocaleTimeString("pt-BR", {
+		hour: "2-digit",
+		minute: "2-digit",
+	});
 }
 
-function temperaturaSparkSeries(dados: MachineData[], maxPoints = 24) {
-	if (!dados.length) return [];
-	return dados.slice(-maxPoints).map((d) => d.temperatura);
+function getTemperaturaSparkSeries(data: MachineData[], maxPoints = 24) {
+	return data.slice(-maxPoints).map((item) => item.temperatura);
+}
+
+function getStatusDotClass(category?: string | null) {
+	if (category === "operando") return "text-success";
+	if (category === "alerta") return "text-danger";
+	if (category === "atencao") return "text-warning";
+	return "text-secondary";
 }
 
 export function useMachineDetail(machine: Machine | null) {
+	// navegação da tela
 	const [mainTab, setMainTab] = useState<MainTab>("resumo");
 	const [range, setRange] = useState<RangeKey>("24h");
 	const [windowStart, setWindowStart] = useState(0);
 
+	// dados base da máquina
+	const machineData = machine?.dados ?? [];
 	const lastData = machine ? getLastMachineData(machine) : undefined;
 	const statusInfo = machine ? getStatusInfo(machine.status) : null;
 	const imageUrl = machine ? getMachineImageUrl(machine.codigo) : "";
-	const showTempBadge = machine ? hasTemperaturaAltaAlert(machine) : false;
-	const dados = machine?.dados?.length ? machine.dados : [];
-
-	const temperaturaSpark = useMemo(() => temperaturaSparkSeries(dados), [dados]);
+	const alertaLabels = useMemo(
+		() => (machine ? getMachineAlertaLabels(machine) : []),
+		[machine],
+	);
+	const temperaturaAlertaAtiva = useMemo(
+		() => (machine ? hasTemperaturaAltaAlert(machine) : false),
+		[machine],
+	);
+	const showTempBadge = alertaLabels.length > 0;
 
 	useEffect(() => {
 		setMainTab("resumo");
@@ -57,76 +76,83 @@ export function useMachineDetail(machine: Machine | null) {
 		setWindowStart(0);
 	}, [machine?.id, range]);
 
+	// regras de range
 	const windowSize = RANGE_WINDOW[range];
-	const maxStart = Math.max(0, dados.length - windowSize);
-
-	const hasEnoughSamplesForRange = dados.length >= MIN_SAMPLES_FOR_RANGE[range];
+	const maxStart = Math.max(0, machineData.length - windowSize);
+	const hasEnoughSamplesForRange =
+		machineData.length >= MIN_SAMPLES_FOR_RANGE[range];
 
 	useEffect(() => {
-		setWindowStart((s) => Math.min(s, maxStart));
+		setWindowStart((current) => Math.min(current, maxStart));
 	}, [maxStart]);
 
 	useEffect(() => {
-		if (range === "7d" && dados.length < MIN_SAMPLES_FOR_RANGE["7d"]) {
+		if (range !== "24h" && !hasEnoughSamplesForRange) {
 			setRange("24h");
 		}
-		if (range === "30d" && dados.length < MIN_SAMPLES_FOR_RANGE["30d"]) {
-			setRange("24h");
-		}
-	}, [dados.length, range]);
+	}, [range, hasEnoughSamplesForRange]);
+
+	const rangeDisabled = (key: RangeKey) =>
+		key !== "24h" && machineData.length < MIN_SAMPLES_FOR_RANGE[key];
+
+	// dados para gráfico
+	const temperaturaSpark = useMemo(
+		() => getTemperaturaSparkSeries(machineData),
+		[machineData],
+	);
 
 	const chartSlice = useMemo(() => {
-		if (!dados.length || !hasEnoughSamplesForRange) return [];
-		const start = Math.min(windowStart, maxStart);
-		return dados.slice(start, start + windowSize);
-	}, [dados, hasEnoughSamplesForRange, maxStart, windowSize, windowStart]);
+		if (!hasEnoughSamplesForRange) return [];
 
-	const chart24h = useMemo(() => {
-		if (range !== "24h" || !dados.length || !hasEnoughSamplesForRange) return null;
-		return build24hChartSeries(dados);
-	}, [range, dados, hasEnoughSamplesForRange]);
+		const start = Math.min(windowStart, maxStart);
+		return machineData.slice(start, start + windowSize);
+	}, [hasEnoughSamplesForRange, machineData, maxStart, windowSize, windowStart]);
+
+	const chart24hSeries = useMemo(() => {
+		if (range !== "24h" || !hasEnoughSamplesForRange || !machineData.length) {
+			return null;
+		}
+
+		return build24hChartSeries(machineData);
+	}, [range, hasEnoughSamplesForRange, machineData]);
 
 	const chartData = useMemo(() => {
 		if (range === "24h") {
-			if (!chart24h) return [];
-			return chart24h.points.map((p) => ({
-				label: p.label,
-				rpm: p.rpm,
-				timeMs: p.timeMs,
-			}));
+			return (
+				chart24hSeries?.points.map((point) => ({
+					label: point.label,
+					rpm: point.rpm,
+					timeMs: point.timeMs,
+					telemetryStatus: point.telemetryStatus,
+				})) ?? []
+			);
 		}
-		return chartSlice.map((d) => ({
-			label: formatChartLabel(d.timestamp),
-			rpm: d.rpm,
-		}));
-	}, [range, chart24h, chartSlice]);
 
-	const kpiBlock = useMemo(() => computeKpisFromDados(dados), [dados]);
-	const kpis = useMemo(
-		() => ({
-			alerta: kpiBlock.alerta,
-			atencao: kpiBlock.atencao,
-			totalOper: kpiBlock.totalOper,
-		}),
-		[kpiBlock],
+		return chartSlice.map((item) => ({
+			label: formatChartLabel(item.timestamp),
+			rpm: item.rpm,
+			timeMs: new Date(item.timestamp).getTime(),
+			telemetryStatus: getTelemetryStatus(item),
+		}));
+	}, [range, chart24hSeries, chartSlice]);
+
+	// indicadores
+	const computedKpis = useMemo(
+		() => computeKpisFromDados(machineData),
+		[machineData],
 	);
 
-	const efficiency = kpiBlock.efficiency;
-	const efficiencyClass = kpiBlock.efficiencyClass;
-
-	const statusDotClass =
-		statusInfo?.category === "operando"
-			? "text-success"
-			: statusInfo?.category === "alerta"
-				? "text-danger"
-				: statusInfo?.category === "atencao"
-					? "text-warning"
-					: "text-secondary";
-
-	const rangeDisabled = (key: RangeKey) => {
-		if (key === "24h") return false;
-		return dados.length < MIN_SAMPLES_FOR_RANGE[key];
+	const kpis = {
+		alerta: computedKpis.alerta,
+		atencao: computedKpis.atencao,
+		totalOper: computedKpis.totalOper,
 	};
+
+	const efficiency = computedKpis.efficiency;
+	const efficiencyClass = computedKpis.efficiencyClass;
+
+	// apresentação
+	const statusDotClass = getStatusDotClass(statusInfo?.category);
 
 	return {
 		mainTab,
@@ -137,16 +163,21 @@ export function useMachineDetail(machine: Machine | null) {
 		setWindowStart,
 		windowSize,
 		maxStart,
+
 		lastData,
 		statusInfo,
 		imageUrl,
 		showTempBadge,
-		dados,
+		alertaLabels,
+		temperaturaAlertaAtiva,
+		dados: machineData,
+
 		chartData,
-		chart24hAxis: range === "24h" ? chart24h?.axis ?? null : null,
+		chart24hAxis: range === "24h" ? chart24hSeries?.axis ?? null : null,
 		temperaturaSpark,
 		hasEnoughSamplesForRange,
 		rangeDisabled,
+
 		kpis,
 		efficiency,
 		efficiencyClass,

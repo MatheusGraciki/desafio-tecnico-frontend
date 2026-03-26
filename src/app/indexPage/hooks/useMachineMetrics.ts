@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import type { Machine } from "@/services/machines/type";
-import { isSameCalendarDay } from "../utils/date";
+import { isToday } from "../utils/date";
 import { countMachinesByStatus, getStatusCategory } from "../utils/machine";
 import type { MachineStatusCount } from "../utils/machine/type";
 
@@ -16,7 +16,7 @@ export function useMachineMetrics(machines: Machine[]) {
 			machines.filter(
 				(machine) =>
 					getStatusCategory(machine.status) === "alerta" &&
-					isSameCalendarDay(machine.ultimaAtualizacao),
+					isToday(machine.ultimaAtualizacao),
 			).length,
 		[machines],
 	);

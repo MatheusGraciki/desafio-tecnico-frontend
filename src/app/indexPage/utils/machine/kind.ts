@@ -6,7 +6,6 @@ export function inferMachineKind(codigo: string): string {
 		.toLowerCase()
 		.normalize("NFD")
 		.replace(/[\u0300-\u036f]/g, "");
-	console.debug(nomeMaquina);
 	if (nomeMaquina.includes("torno")) return "Torno";
 	if (nomeMaquina.includes("fresadora")) return "Fresadora";
 	if (nomeMaquina.includes("retifica")) return "Retifica";

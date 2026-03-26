@@ -1,5 +1,5 @@
-/** Mesmo critério de “hoje” usado em `useIndexMachines` (alertas do dia). */
-export function isSameCalendarDay(iso?: string | null): boolean {
+/** Verifica se a data é do dia corrente. */
+export function isToday(iso?: string | null): boolean {
 	if (!iso) return false;
 	const date = new Date(iso);
 	if (Number.isNaN(date.getTime())) return false;
