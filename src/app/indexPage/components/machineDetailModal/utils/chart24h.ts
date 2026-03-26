@@ -1,10 +1,14 @@
 import type { MachineData } from "@/services/machines/type";
+import type { TelemetryStatus } from "./kpiFromDados";
+import { getTelemetryStatus } from "./kpiFromDados";
 
 export type Chart24hPoint = {
 	timeMs: number;
 	rpm: number;
 	/** Tooltip */
 	label: string;
+	/** Pior status entre amostras da hora (para cor no gráfico). */
+	telemetryStatus: TelemetryStatus;
 };
 
 export type Chart24hAxis = {
@@ -42,18 +46,34 @@ export function build24hChartSeries(dados: MachineData[]): {
 	const domainEnd = Date.now();
 	const windowStart = domainEnd - MS_24H;
 
-	const buckets = new Map<number, { sum: number; n: number }>();
+	const STATUS_RANK: Record<TelemetryStatus, number> = {
+		parada: 0,
+		operando: 1,
+		atencao: 2,
+		alerta: 3,
+	};
+
+	function pickWorst(a: TelemetryStatus, b: TelemetryStatus): TelemetryStatus {
+		return STATUS_RANK[a] >= STATUS_RANK[b] ? a : b;
+	}
+
+	const buckets = new Map<
+		number,
+		{ sum: number; n: number; worst: TelemetryStatus }
+	>();
 
 	for (const d of dados) {
 		const timeMs = new Date(d.timestamp).getTime();
 		if (Number.isNaN(timeMs) || timeMs < windowStart || timeMs > domainEnd) continue;
 		const hourMs = hourStartLocalMs(timeMs);
+		const st = getTelemetryStatus(d);
 		const cur = buckets.get(hourMs);
 		if (cur) {
 			cur.sum += d.rpm;
 			cur.n += 1;
+			cur.worst = pickWorst(cur.worst, st);
 		} else {
-			buckets.set(hourMs, { sum: d.rpm, n: 1 });
+			buckets.set(hourMs, { sum: d.rpm, n: 1, worst: st });
 		}
 	}
 
@@ -64,6 +84,7 @@ export function build24hChartSeries(dados: MachineData[]): {
 			timeMs: hourMs,
 			rpm: b.sum / b.n,
 			label: formatTooltipLabel(hourMs),
+			telemetryStatus: b.worst,
 		};
 	});
 

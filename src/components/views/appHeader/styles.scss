@@ -1,6 +1,6 @@
 .app-header {
 	border-bottom: 1px solid var(--border);
-	background-color: var(--foreground);
+	background-color: #1a1d2c;
 	color: var(--primary-foreground);
 	z-index: 1000;
 }
@@ -17,7 +17,7 @@
 }
 
 .app-header-logo {
-	height: clamp(2rem, 3vw, 3rem);
+	height: clamp(2rem, 2.5vw, 2rem);
 	width: auto;
 	object-fit: contain;
 	display: block;

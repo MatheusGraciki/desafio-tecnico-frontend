@@ -10,6 +10,7 @@ export function AppHeader() {
 					<img
 						alt="Logo"
 						className="app-header-logo"
+						src="https://ecoautomacao.com.br/wp-content/uploads/2025/12/eco_logo.png"
 					/>
 				</div>
 

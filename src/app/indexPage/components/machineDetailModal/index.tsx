@@ -41,7 +41,8 @@ export function MachineDetailModal({
 								machine={machine}
 								lastData={detail.lastData}
 								imageUrl={detail.imageUrl}
-								showTempBadge={detail.showTempBadge}
+								alertaLabels={detail.alertaLabels}
+								temperaturaAlertaAtiva={detail.temperaturaAlertaAtiva}
 								temperaturaSpark={detail.temperaturaSpark}
 							/>
 							<div className="machine-detail-modal-right">

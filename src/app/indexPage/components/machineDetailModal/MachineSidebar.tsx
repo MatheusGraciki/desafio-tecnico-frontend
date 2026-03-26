@@ -1,26 +1,34 @@
-import { FaLocationDot, FaTemperatureHigh } from "react-icons/fa6";
+import { FaLocationDot, FaTriangleExclamation } from "react-icons/fa6";
+
 import type { Machine, MachineData } from "@/services/machines/type";
 import {
 	formatPotenciaW,
 	formatRpm,
-	formatTemperaturaCompact,
+	formatTemperatura,
 } from "@/app/indexPage/utils/format";
 
 interface MachineSidebarProps {
 	machine: Machine;
 	lastData?: MachineData;
 	imageUrl: string;
-	showTempBadge: boolean;
+	alertaLabels: string[];
+	temperaturaAlertaAtiva: boolean;
 	temperaturaSpark: number[];
 }
 
-function TemperatureSpark({
-	values,
-	temperaturaAltaPorAlerta,
-}: {
+type TemperatureSparkProps = {
 	values: number[];
-	temperaturaAltaPorAlerta: boolean;
-}) {
+	isDanger: boolean;
+};
+
+type MetricItemProps = {
+	label: string;
+	value: string;
+	isDanger?: boolean;
+	children?: React.ReactNode;
+};
+
+function TemperatureSpark({ values, isDanger }: TemperatureSparkProps) {
 	if (!values.length) {
 		return <div className="machine-detail-modal-spark-empty" aria-hidden />;
 	}
@@ -31,15 +39,41 @@ function TemperatureSpark({
 			role="img"
 			aria-label="Variação recente de temperatura"
 		>
-			{values.map((_, i) => {
-				const hot = temperaturaAltaPorAlerta;
-				return (
-					<span
-						key={i}
-						className={`machine-detail-modal-spark-seg ${hot ? "machine-detail-modal-spark-seg--hot" : "machine-detail-modal-spark-seg--ok"}`}
-					/>
-				);
-			})}
+			{values.map((_, index) => (
+				<span
+					key={index}
+					className={`machine-detail-modal-spark-seg ${
+						isDanger
+							? "machine-detail-modal-spark-seg--hot"
+							: "machine-detail-modal-spark-seg--ok"
+					}`}
+				/>
+			))}
+		</div>
+	);
+}
+
+function AlertBadge({ text, title }: { text: string; title?: string }) {
+	return (
+		<div className="machine-detail-modal-footer-badge" title={title ?? text}>
+			<FaTriangleExclamation size={14} className="flex-shrink-0" aria-hidden />
+			<span className="machine-detail-modal-footer-badge-text">{text}</span>
+		</div>
+	);
+}
+
+function MetricItem({ label, value, isDanger = false, children }: MetricItemProps) {
+	return (
+		<div className="machine-detail-modal-mcol">
+			<span className="machine-detail-modal-mcol-label">{label}</span>
+			<div
+				className={`machine-detail-modal-mcol-value ${
+					isDanger ? "machine-detail-modal-mcol-value-danger" : ""
+				}`}
+			>
+				{value}
+			</div>
+			{children}
 		</div>
 	);
 }
@@ -48,10 +82,19 @@ export function MachineSidebar({
 	machine,
 	lastData,
 	imageUrl,
-	showTempBadge,
+	alertaLabels,
+	temperaturaAlertaAtiva,
 	temperaturaSpark,
 }: MachineSidebarProps) {
-	const tempDisplay = formatTemperaturaCompact(lastData?.temperatura);
+	const hasAlerts = alertaLabels.length > 0;
+	const alertBadgeTitle = alertaLabels.join(" · ");
+	const alertBadgeText =
+		alertaLabels.length === 1 ? alertaLabels[0] : `${alertaLabels.length} alertas`;
+
+	const rpmText = formatRpm(lastData?.rpm);
+	const potenciaText = formatPotenciaW(lastData?.potencia);
+	const temperaturaText = formatTemperatura(lastData?.temperatura);
+	const locationText = machine.local || "—";
 
 	return (
 		<div className="machine-detail-modal-left">
@@ -63,55 +106,61 @@ export function MachineSidebar({
 					loading="lazy"
 					decoding="async"
 				/>
-				{showTempBadge ? (
-					<span className="machine-detail-modal-image-badge">
-						<FaTemperatureHigh size={14} aria-hidden />
-						Temp. Alta
+
+				{hasAlerts ? (
+					<span
+						className="machine-detail-modal-image-badge"
+						title={alertBadgeTitle}
+					>
+						<FaTriangleExclamation size={14} className="flex-shrink-0" aria-hidden />
+						<span className="machine-detail-modal-image-badge-text">
+							{alertBadgeText}
+						</span>
 					</span>
 				) : null}
 			</div>
 
 			<div>
 				<div className="machine-detail-modal-id">ID #{machine.id}</div>
+
 				<div className="machine-detail-modal-location">
 					<FaLocationDot className="text-secondary flex-shrink-0" aria-hidden />
-					<span>Local: {machine.local || "—"}</span>
+					<span>Local: {locationText}</span>
 				</div>
 			</div>
 
 			<div className="machine-detail-modal-metrics-card">
 				<div className="machine-detail-modal-metrics-card-grid">
-					<div className="machine-detail-modal-mcol">
-						<span className="machine-detail-modal-mcol-label">Velocidade</span>
-						<div className="machine-detail-modal-mcol-value">{formatRpm(lastData?.rpm)}</div>
-					</div>
+					<MetricItem label="Velocidade" value={rpmText} />
+
 					<div className="machine-detail-modal-mcol-divider" aria-hidden />
-					<div className="machine-detail-modal-mcol">
-						<span className="machine-detail-modal-mcol-label">Potência</span>
-						<div className="machine-detail-modal-mcol-value">{formatPotenciaW(lastData?.potencia)}</div>
-					</div>
+
+					<MetricItem label="Potência" value={potenciaText} />
+
 					<div className="machine-detail-modal-mcol-divider" aria-hidden />
+
 					<div className="machine-detail-modal-mcol machine-detail-modal-mcol--temp">
-						<span className="machine-detail-modal-mcol-label">Temperatura</span>
-						<div
-							className={`machine-detail-modal-mcol-value ${showTempBadge ? "machine-detail-modal-mcol-value-danger" : ""}`}
+						<MetricItem
+							label="Temperatura"
+							value={temperaturaText}
+							isDanger={temperaturaAlertaAtiva}
 						>
-							{tempDisplay}
-						</div>
-						<TemperatureSpark
-							values={temperaturaSpark}
-							temperaturaAltaPorAlerta={showTempBadge}
-						/>
+							<TemperatureSpark
+								values={temperaturaSpark}
+								isDanger={temperaturaAlertaAtiva}
+							/>
+						</MetricItem>
 					</div>
 				</div>
-				{showTempBadge ? (
+
+				{hasAlerts ? (
 					<>
 						<div className="machine-detail-modal-metrics-card-rule" />
-						<div className="machine-detail-modal-metrics-card-footer">
-							<div className="machine-detail-modal-footer-badge">
-								<FaTemperatureHigh size={14} aria-hidden />
-								Temp. Alta
-							</div>
+
+						<div className="machine-detail-modal-metrics-card-footer machine-detail-modal-metrics-card-footer--alerts">
+							{alertaLabels.map((label, index) => (
+								<AlertBadge key={`${index}-${label}`} text={label} />
+							))}
 						</div>
 					</>
 				) : null}
