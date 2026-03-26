@@ -1,7 +1,5 @@
 import { useMemo, useState } from "react";
-import { FaBell, FaCircleExclamation, FaRegCircleCheck } from "react-icons/fa6";
 import { Alert, Button, Col, Row } from "reactstrap";
-import { LuClock12, LuClock4 } from "react-icons/lu";
 
 import { AnalysisSidebar } from "./components/analysisSidebar";
 import { MachineEditModal } from "./components/machineEditModal";
@@ -9,70 +7,16 @@ import { MachineDetailModal } from "./components/machineDetailModal";
 import { IndexFilters } from "./components/indexFilters";
 import { StatusDistribution } from "./components/statusDistribution";
 import { MachineCard } from "./components/machineCard";
+import { STATUS_CONFIG } from "./constants/statusConfig";
+import { DashboardSkeleton } from "./components/dashboardSkeleton";
 import { StatusCategoryMachinesModal } from "./components/statusCategoryMachinesModal";
 import { StatusCards } from "./components/statusCards";
-import { useIndexMachines } from "./hooks/useMachines";
+import { useIndexMachines } from "./hooks/useIndexMachines";
 import "./styles.scss";
 
 import { getStatusCategory } from "@/app/indexPage/utils/machine";
 import type { Machine, MachineStatusCategory } from "@/services/machines/type";
 import type { SummaryItem } from "./type";
-
-const STATUS_CONFIG: Record<
-	MachineStatusCategory,
-	Pick<
-		SummaryItem,
-		"label" | "textColor" | "buttonColor" | "smallIcon" | "largeIcon"
-	>
-> = {
-	operando: {
-		label: "Em Operação",
-		textColor: "success",
-		buttonColor: "success",
-		smallIcon: null,
-		largeIcon: <FaRegCircleCheck size={30} />,
-	},
-	alerta: {
-		label: "Em Alerta",
-		textColor: "danger",
-		buttonColor: "danger",
-		smallIcon: null,
-		largeIcon: <FaBell size={28} />,
-	},
-	atencao: {
-		label: "Em Atenção",
-		textColor: "warning",
-		buttonColor: "warning",
-		smallIcon: null,
-		largeIcon: <FaCircleExclamation size={28} />,
-	},
-	parada: {
-		label: "Parada ou Offline",
-		textColor: "secondary",
-		buttonColor: "secondary",
-		smallIcon: <LuClock12 size={16} />,
-		largeIcon: <LuClock4 size={30} />,
-	},
-};
-
-function DashboardSkeleton() {
-	return (
-		<div className="index-page-skeleton">
-			<div className="index-page-skeleton-top">
-				{Array.from({ length: 4 }).map((_, index) => (
-					<div
-						key={index}
-						className="bg-body-secondary rounded index-page-skeleton-card"
-					/>
-				))}
-			</div>
-			<div className="index-page-skeleton-bottom">
-				<div className="bg-body-secondary rounded index-page-skeleton-main" />
-				<div className="bg-body-secondary rounded index-page-skeleton-side" />
-			</div>
-		</div>
-	);
-}
 
 export default function IndexPage() {
 	const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
@@ -100,10 +44,10 @@ export default function IndexPage() {
 		alertsEnteredToday,
 		criticalMachines,
 		warningMachines,
-		mergeMachine,
+		updateMachine,
 	} = useIndexMachines();
 
-	const summaryItems = useMemo<SummaryItem[]>(() => {
+	const items = useMemo<SummaryItem[]>(() => {
 		const total = filteredMachines.length || 1;
 
 		return (Object.keys(STATUS_CONFIG) as MachineStatusCategory[]).map(
@@ -202,7 +146,7 @@ export default function IndexPage() {
 
 							<div className="index-summary-wrapper">
 								<StatusCards
-									items={summaryItems}
+									items={items}
 									onDetailsClick={(key) =>
 										setStatusListCategory(key as MachineStatusCategory)
 									}
@@ -268,13 +212,15 @@ export default function IndexPage() {
 				isOpen={Boolean(machineToEdit)}
 				machine={machineToEdit}
 				onClose={() => setMachineToEdit(null)}
-				onSaved={(updated) => {
-					mergeMachine(updated);
-					setSelectedMachine((prev) =>
-						prev && String(prev.id) === String(updated.id)
-							? { ...prev, ...updated }
-							: prev,
-					);
+				onSaved={(machine) => {
+					updateMachine(machine);
+					setSelectedMachine((currentSelected) => {
+						if (!currentSelected) return currentSelected;
+						if (Number(currentSelected.id) !== Number(machine.id)) {
+							return currentSelected;
+						}
+						return { ...currentSelected, ...machine };
+					});
 				}}
 			/>
 
