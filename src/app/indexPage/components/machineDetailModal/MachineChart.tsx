@@ -2,10 +2,7 @@ import { useMemo } from "react";
 import type ApexCharts from "apexcharts";
 import ReactApexChart from "react-apexcharts";
 import type { Chart24hAxis } from "./utils/chart24h";
-import {
-	RPM_ALERTA_THRESHOLD,
-	type TelemetryStatus,
-} from "./utils/kpiFromDados";
+import { type TelemetryStatus } from "./utils/kpiFromDados";
 
 export type MachineChartPoint = {
 	label: string;
@@ -209,7 +206,7 @@ export function MachineChart({ chartData, chart24hAxis }: MachineChartProps) {
 			annotations: {
 				yaxis: [
 					{
-						y: RPM_ALERTA_THRESHOLD,
+						y: 6000,
 						borderColor: STROKE.alerta,
 						borderWidth: 1,
 						strokeDashArray: 5,

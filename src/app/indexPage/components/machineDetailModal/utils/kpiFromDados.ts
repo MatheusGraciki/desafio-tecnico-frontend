@@ -20,7 +20,7 @@ const RULES = {
 	minutesPerSample: 60,
 	stopRpm: 100,
 	attentionRpm: 2200,
-	alertRpm: 5000,
+	alertRpm: 6000,
 	attentionTemp: 65,
 	alertTemp: 75,
 } as const;
