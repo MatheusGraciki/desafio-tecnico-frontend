@@ -13,7 +13,7 @@ export function IndexFilters({
 	onMachineKindChange,
 }: IndexFiltersProps) {
 	const locationOptions = [
-		{ value: "all", label: "Local: --" },
+		{ value: "all", label: "Local: Todos" },
 		...locations
 			.filter((location) => location !== "all")
 			.map((location) => ({ value: location, label: `Local: ${location}` })),
@@ -21,8 +21,8 @@ export function IndexFilters({
 
 	const kindOptions = machineKinds.map((kind) =>
 		kind === "all"
-			? { value: "all", label: "Tipo: --" }
-			: { value: kind, label: `Tipo: ${kind}` },
+			? { value: "all", label: "Máquina: Todas" }
+			: { value: kind, label: `Máquina: ${kind}` },
 	);
 
 	return (
@@ -43,7 +43,7 @@ export function IndexFilters({
 					options={kindOptions}
 					onChange={onMachineKindChange}
 					ariaLabel="Filtrar por tipo de máquina"
-					icon={<FaIndustry size={16} className="text-primary" />}
+					icon={<FaIndustry size={16} className="text-success" />}
 				/>
 			</div>
 		</div>
